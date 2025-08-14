@@ -32,7 +32,7 @@ export default function BusinessRegisterPage() {
                         <SelectItem value="food">Fast Food & Restaurant</SelectItem>
                         <SelectItem value="services">Services (Salon, etc.)</SelectItem>
                         <SelectItem value="hardware">Hardware</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="other">General Retail</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -49,7 +49,7 @@ export default function BusinessRegisterPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" />
             </div>
-            <Link href="/admin/dashboard" passHref>
+            <Link href="/register/business/profile" passHref>
                 <Button type="submit" className="w-full">
                 Create Business Account
                 </Button>

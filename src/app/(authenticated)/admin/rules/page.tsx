@@ -19,10 +19,13 @@ import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Image from "next/image";
 
 const FormSchema = z.object({
   pointsPerPurchase: z.coerce.number().min(0, "Must be non-negative"),
   pointsPerReferral: z.coerce.number().min(0, "Must be non-negative"),
+  pointsPerCheckIn: z.coerce.number().min(0, "Must be non-negative"),
   tierName: z.string().min(1, "Tier name is required"),
   pointsToReach: z.coerce.number().min(1, "Must be greater than 0"),
 });
@@ -33,6 +36,7 @@ export default function RulesPage() {
     defaultValues: {
       pointsPerPurchase: 1,
       pointsPerReferral: 100,
+      pointsPerCheckIn: 10,
       tierName: "Platinum",
       pointsToReach: 5000,
     },
@@ -51,13 +55,13 @@ export default function RulesPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <h1 className="text-2xl font-bold font-headline tracking-tight mb-4">Loyalty Rules</h1>
+      <h1 className="text-2xl font-bold font-headline tracking-tight mb-4">Loyalty Engine Configuration</h1>
       <Tabs defaultValue="points" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="points">Points Earning</TabsTrigger>
+          <TabsTrigger value="points">Points</TabsTrigger>
           <TabsTrigger value="tiers">Tiers & Milestones</TabsTrigger>
-          <TabsTrigger value="offers">Offers</TabsTrigger>
-          <TabsTrigger value="mukando">Mukando</TabsTrigger>
+          <TabsTrigger value="offers">Offers & Campaigns</TabsTrigger>
+          <TabsTrigger value="mukando">Mukando Manager</TabsTrigger>
         </TabsList>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -77,7 +81,6 @@ export default function RulesPage() {
                         <FormControl>
                           <Input type="number" placeholder="1" {...field} />
                         </FormControl>
-                        <FormDescription>Points awarded for every dollar spent.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -91,7 +94,19 @@ export default function RulesPage() {
                         <FormControl>
                           <Input type="number" placeholder="100" {...field} />
                         </FormControl>
-                         <FormDescription>Points awarded when a new customer signs up with a referral code.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="pointsPerCheckIn"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Points per check-in</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="10" {...field} />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -107,39 +122,24 @@ export default function RulesPage() {
                         <CardDescription>Set up loyalty tiers to reward your best customers.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="tierName"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Tier Name</FormLabel>
-                                <FormControl>
-                                <Input placeholder="e.g., Platinum" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="pointsToReach"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Points required to reach</FormLabel>
-                                <FormControl>
-                                <Input type="number" placeholder="5000" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                         <FormItem>
-                            <FormLabel>Tier Reward</FormLabel>
-                            <FormControl>
-                                <Textarea placeholder="e.g., 10% off all purchases" />
-                            </FormControl>
-                             <FormDescription>Describe the reward unlocked at this tier.</FormDescription>
-                        </FormItem>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card className="p-4">
+                          <FormLabel>Bronze Tier</FormLabel>
+                          <Input className="mt-2" placeholder="e.g., 0 Points" />
+                          <Textarea className="mt-2" placeholder="e.g., Welcome bonus" />
+                        </Card>
+                        <Card className="p-4 border-primary">
+                          <FormLabel>Silver Tier</FormLabel>
+                          <Input className="mt-2" placeholder="e.g., 1000 Points" />
+                          <Textarea className="mt-2" placeholder="e.g., 5% off" />
+                        </Card>
+                         <Card className="p-4">
+                          <FormLabel>Gold Tier</FormLabel>
+                          <Input className="mt-2" placeholder="e.g., 5000 Points" />
+                          <Textarea className="mt-2" placeholder="e.g., 10% off + free item" />
+                        </Card>
+                      </div>
+                      <Button variant="outline">Add New Tier</Button>
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -147,7 +147,7 @@ export default function RulesPage() {
              <TabsContent value="offers">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Create an Offer</CardTitle>
+                        <CardTitle>Create an Offer Campaign</CardTitle>
                         <CardDescription>Design and manage special offers for your customers.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -157,19 +157,35 @@ export default function RulesPage() {
                                 <Input placeholder="e.g., Weekend Special" />
                             </FormControl>
                         </FormItem>
-                        <FormItem>
-                            <FormLabel>Offer Description</FormLabel>
-                            <FormControl>
-                                <Textarea placeholder="e.g., Get 2-for-1 on all coffees" />
-                            </FormControl>
+                         <FormItem>
+                            <FormLabel>Campaign Type</FormLabel>
+                            <Select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a campaign type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="geo">Geo-fenced</SelectItem>
+                                    <SelectItem value="time">Time-based</SelectItem>
+                                    <SelectItem value="event">Event-based</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </FormItem>
-                        <FormItem>
-                            <FormLabel>Points Cost (optional)</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="e.g., 100" />
-                            </FormControl>
-                             <FormDescription>If this offer can be redeemed with points.</FormDescription>
-                        </FormItem>
+                         <div className="space-y-2">
+                          <Label>Geo-fence Radius</Label>
+                           <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden relative">
+                           <Image 
+                              src="https://placehold.co/1200x600.png" 
+                              alt="Map for geo-fencing" 
+                              layout="fill"
+                              objectFit="cover"
+                              data-ai-hint="map radius"
+                              className="opacity-70"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                              <Button variant="secondary">Drop Pin and Set Radius</Button>
+                          </div>
+                        </div>
+                        </div>
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -177,8 +193,8 @@ export default function RulesPage() {
              <TabsContent value="mukando">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Set Up a Mukando Group</CardTitle>
-                        <CardDescription>Define the rules for a new savings group.</CardDescription>
+                        <CardTitle>Mukando/maRound Manager</CardTitle>
+                        <CardDescription>Create and track savings groups.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <FormItem>
@@ -200,10 +216,11 @@ export default function RulesPage() {
                                 <Input type="number" placeholder="e.g., 10" />
                             </FormControl>
                         </FormItem>
+                        <Button>Create New Group</Button>
                     </CardContent>
                 </Card>
             </TabsContent>
-            <Button type="submit">Save All Rules</Button>
+            <Button type="submit" className="w-full">Save All Rules</Button>
           </form>
         </Form>
       </Tabs>
