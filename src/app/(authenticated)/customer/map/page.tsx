@@ -1,29 +1,31 @@
+
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import Image from "next/image";
+import { useIsMobile } from "@/hooks/use-is-mobile";
+import dynamic from "next/dynamic";
+import { useMemo } from "react";
 
 export default function MapPage() {
+    const isMobile = useIsMobile();
+    
+    // Dynamically import the MapView component to ensure it's only rendered on the client side.
+    // Leaflet is not SSR-compatible.
+    const MapView = useMemo(() => dynamic(() => import('@/components/customer/map-view'), {
+        ssr: false,
+        loading: () => <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center"><p>Loading map...</p></div>
+    }), []);
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 flex flex-col h-full">
       <h1 className="text-2xl font-bold font-headline tracking-tight mb-4">Nearby Offers</h1>
-      <Card>
+      <Card className="flex-grow">
         <CardHeader>
           <CardTitle>Explore Businesses Around You</CardTitle>
           <CardDescription>Find participating businesses and see their exclusive location-based offers.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden relative">
-             <Image 
-                src="https://placehold.co/1200x600.png" 
-                alt="Map of Harare showing business locations" 
-                layout="fill"
-                objectFit="cover"
-                data-ai-hint="map harare"
-                className="opacity-70"
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-lg font-semibold text-background bg-foreground/50 px-4 py-2 rounded-md">Map View Coming Soon</p>
-            </div>
-          </div>
+        <CardContent className="h-[calc(100%-80px)]">
+            <MapView />
         </CardContent>
       </Card>
     </div>
