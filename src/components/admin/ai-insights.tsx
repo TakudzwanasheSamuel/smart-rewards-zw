@@ -41,7 +41,7 @@ function ChurnPrediction() {
             <AlertTriangle className="h-5 w-5 text-destructive" />
             <h4 className="font-semibold">High-Risk Customer</h4>
         </div>
-        <p className="text-sm"><span className="font-medium">Risk Score:</span> <Badge variant="destructive">{churnData.riskScore.toFixed(2)}</Badge></p>
+        <div className="text-sm"><span className="font-medium">Risk Score:</span> <Badge variant="destructive">{churnData.riskScore.toFixed(2)}</Badge></div>
         <div>
             <h5 className="text-sm font-medium mb-1">Reasons:</h5>
             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
