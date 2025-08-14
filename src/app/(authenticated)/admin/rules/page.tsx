@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Image from "next/image";
+import { Label } from "@/components/ui/label";
 
 const FormSchema = z.object({
   pointsPerPurchase: z.coerce.number().min(0, "Must be non-negative"),
