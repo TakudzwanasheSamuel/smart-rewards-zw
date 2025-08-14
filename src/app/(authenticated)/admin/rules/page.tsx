@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import dynamic from "next/dynamic";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,8 +21,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Image from "next/image";
 import { Label } from "@/components/ui/label";
+
+const RulesMapView = dynamic(() => import('@/components/admin/rules-map-view'), {
+    ssr: false,
+    loading: () => <div className="h-full w-full bg-muted rounded-lg flex items-center justify-center"><p>Loading map...</p></div>
+});
+
 
 const FormSchema = z.object({
   pointsPerPurchase: z.coerce.number().min(0, "Must be non-negative"),
@@ -174,18 +180,8 @@ export default function RulesPage() {
                          <div className="space-y-2">
                           <Label>Geo-fence Radius</Label>
                            <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden relative">
-                           <Image 
-                              src="https://placehold.co/1200x600.png" 
-                              alt="Map for geo-fencing" 
-                              layout="fill"
-                              objectFit="cover"
-                              data-ai-hint="map radius"
-                              className="opacity-70"
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center">
-                              <Button variant="secondary">Drop Pin and Set Radius</Button>
+                             <RulesMapView />
                           </div>
-                        </div>
                         </div>
                     </CardContent>
                 </Card>
