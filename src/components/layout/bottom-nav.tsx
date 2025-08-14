@@ -18,8 +18,8 @@ export function BottomNav({ navItems }: { navItems: NavItem[] }) {
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
               pathname.startsWith(item.href)
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "text-primary font-bold"
+                : "text-muted-foreground hover:text-primary"
             )}
           >
             <item.icon className="h-5 w-5" />

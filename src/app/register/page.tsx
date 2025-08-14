@@ -11,9 +11,9 @@ export default function RegisterPage() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl w-full">
         <Link href="/register/customer" className="group">
-          <Card className="h-full hover:border-primary transition-colors duration-200">
+          <Card className="h-full hover:border-primary transition-colors duration-200 bg-card">
             <CardHeader>
-              <User className="h-10 w-10 text-accent mb-2" />
+              <User className="h-10 w-10 text-secondary mb-2" />
               <CardTitle className="font-headline">I&apos;m a Customer</CardTitle>
             </CardHeader>
             <CardContent>
@@ -28,9 +28,9 @@ export default function RegisterPage() {
           </Card>
         </Link>
         <Link href="/register/business" className="group">
-          <Card className="h-full hover:border-primary transition-colors duration-200">
+          <Card className="h-full hover:border-primary transition-colors duration-200 bg-card">
             <CardHeader>
-              <Building className="h-10 w-10 text-accent mb-2" />
+              <Building className="h-10 w-10 text-secondary mb-2" />
               <CardTitle className="font-headline">I&apos;m a Business</CardTitle>
             </CardHeader>
             <CardContent>

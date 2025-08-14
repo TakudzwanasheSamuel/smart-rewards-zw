@@ -1,6 +1,19 @@
 import type {Metadata} from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
+import { PT_Sans, Source_Code_Pro } from 'next/font/google';
+
+const ptSans = PT_Sans({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-pt-sans',
+});
+
+const sourceCodePro = Source_Code_Pro({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-source-code-pro',
+});
 
 export const metadata: Metadata = {
   title: 'Smart Rewards ZW',
@@ -14,12 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased min-h-screen bg-background">
+      <body className={`${ptSans.variable} ${sourceCodePro.variable} font-body antialiased min-h-screen bg-background`}>
         {children}
         <Toaster />
       </body>

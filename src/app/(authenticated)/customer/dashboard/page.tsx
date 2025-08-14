@@ -1,9 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Leaf, Wallet, Users, ArrowRight } from "lucide-react";
+import { Leaf, Wallet, Users, ArrowRight, Award, Trophy } from "lucide-react";
 import Link from "next/link";
 import PersonalizedOffers from "@/components/customer/personalized-offers";
+
+const badges = [
+  { icon: Trophy, label: "Mukando Starter" },
+  { icon: Award, label: "Eco-Warrior" },
+]
 
 export default function CustomerDashboard() {
   return (
@@ -36,7 +41,7 @@ export default function CustomerDashboard() {
             <p className="text-xs text-muted-foreground">Making a green difference!</p>
           </CardContent>
         </Card>
-        <Card className="col-span-1 lg:col-span-2">
+        <Card className="col-span-1 md:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Loyalty Tier: Gold</CardTitle>
           </CardHeader>
@@ -68,7 +73,7 @@ export default function CustomerDashboard() {
             </CardHeader>
             <CardContent>
                 <div className="flex items-center space-x-4 rounded-md border p-4">
-                    <Users className="h-6 w-6 text-accent" />
+                    <Users className="h-6 w-6 text-primary" />
                     <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium leading-none">Harare Techies Round</p>
                         <p className="text-sm text-muted-foreground">Next payout: 15 July 2024</p>
@@ -78,6 +83,21 @@ export default function CustomerDashboard() {
             </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>My Badges</CardTitle>
+          <CardDescription>Collect badges for your achievements in the ecosystem.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex gap-4">
+          {badges.map((badge, index) => (
+            <div key={index} className="flex flex-col items-center gap-2 p-4 border rounded-lg bg-card-foreground/5">
+              <badge.icon className="h-8 w-8 text-secondary" />
+              <span className="text-xs font-medium text-center">{badge.label}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
       
       <div>
         <h2 className="text-xl font-bold font-headline tracking-tight">Personalized For You</h2>
