@@ -10,6 +10,8 @@ import {
   SlidersHorizontal,
   Users,
   type LucideIcon,
+  Store,
+  QrCode,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { SidebarNav } from "./sidebar-nav";
@@ -23,7 +25,8 @@ export type NavItem = {
 
 const customerNavItems: NavItem[] = [
   { href: "/customer/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/customer/wallet", label: "Wallet", icon: Wallet },
+  { href: "/customer/businesses", label: "Businesses", icon: Store },
+  { href: "/customer/scan", label: "Scan", icon: QrCode },
   { href: "/customer/map", label: "Map", icon: Map },
   { href: "/customer/notifications", label: "Notifications", icon: Bell },
 ];
@@ -42,13 +45,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = isAdmin ? adminNavItems : customerNavItems;
   const userType = isAdmin ? 'admin' : 'customer';
 
+  // For mobile view, we need to adjust the main content's padding if the bottom nav is present.
+  const mainContentClass = isMobile ? "pb-16" : "";
+
   return (
     <div className="flex min-h-screen">
       <SidebarNav navItems={navItems} userType={userType} />
-      <main className="flex-1">
+      <main className={`flex-1 ${mainContentClass}`}>
         {children}
       </main>
-      {isMobile && <div className="h-16 w-full" />}
       {isMobile && <BottomNav navItems={navItems} />}
     </div>
   );
