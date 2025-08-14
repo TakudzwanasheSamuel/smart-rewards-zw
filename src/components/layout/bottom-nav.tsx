@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import type { NavItem } from "./app-layout";
 
 export function BottomNav({ navItems }: { navItems: NavItem[] }) {
@@ -13,18 +12,18 @@ export function BottomNav({ navItems }: { navItems: NavItem[] }) {
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card border-t">
       <div className="grid h-16 grid-cols-4 items-stretch">
         {navItems.map((item) => (
-          <Link key={item.href} href={item.href} passHref legacyBehavior>
-            <a
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
-                pathname.startsWith(item.href)
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <item.icon className="h-5 w-5" />
-              <span>{item.label}</span>
-            </a>
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
+              pathname.startsWith(item.href)
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <item.icon className="h-5 w-5" />
+            <span>{item.label}</span>
           </Link>
         ))}
       </div>
