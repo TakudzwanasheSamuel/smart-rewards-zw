@@ -69,3 +69,95 @@ A flexible logic system to manage points, Eco-Points, service eligibility, and b
 - **Sustainability:** Eco-Points are earned for environmentally friendly actions.
 - **Traceability Rewards:** Bonus points are earned for scanning a QR code on products to verify their origin.
 - **Verification:** All point-earning actions will include secure verification and logging to prevent fraud and ensure data integrity.
+
+---
+
+## 5. Database Schema
+
+This schema is designed for a full-stack Next.js application using PostgreSQL with the PostGIS extension for geospatial data.
+
+### 5.1. User & Business Management
+
+#### `users` table
+- `id` (UUID, PRIMARY KEY): Unique identifier for a user (customer or business).
+- `email` (VARCHAR(255), UNIQUE): User's email address.
+- `password_hash` (VARCHAR(255)): Securely stored password hash.
+- `user_type` (ENUM 'customer', 'business'): Differentiates between customers and business accounts.
+- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of account creation.
+- `updated_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of last update.
+
+#### `customers` table
+- `user_id` (UUID, PRIMARY KEY, FOREIGN KEY REFERENCES users(id)): Links to the core user account.
+- `full_name` (VARCHAR(255)): Customer's full name.
+- `interests` (TEXT[]): An array of strings for their interests (e.g., {'fast food', 'salons'}).
+- `loyalty_points` (INTEGER, DEFAULT 0): The customer's current points balance.
+- `eco_points` (INTEGER, DEFAULT 0): Points earned for sustainable actions.
+- `loyalty_tier` (VARCHAR(50), DEFAULT 'Bronze'): Current loyalty tier.
+- `referral_code` (VARCHAR(50), UNIQUE): Unique code for referrals.
+
+#### `businesses` table
+- `user_id` (UUID, PRIMARY KEY, FOREIGN KEY REFERENCES users(id)): Links to the core user account.
+- `business_name` (VARCHAR(255)): Name of the business.
+- `business_category` (VARCHAR(50)): Category of the business (e.g., 'Fast Food').
+- `logo_url` (VARCHAR(255)): URL for the business logo.
+- `contact_phone` (VARCHAR(50)): Business phone number.
+- `location` (GEOMETRY(Point, 4326)): PostGIS column to store the business's location as a point.
+
+### 5.2. Loyalty Engine & Transaction Logic
+
+#### `transactions` table
+- `id` (UUID, PRIMARY KEY): Unique identifier for a transaction.
+- `customer_id` (UUID, FOREIGN KEY REFERENCES customers(user_id)): The customer who made the purchase.
+- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business where the purchase was made.
+- `transaction_amount` (DECIMAL(10, 2)): Total value of the transaction.
+- `points_earned` (INTEGER): Points awarded for this transaction.
+- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of the transaction.
+
+#### `loyalty_rules` table
+- `id` (UUID, PRIMARY KEY): Unique identifier for a loyalty rule.
+- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business that owns this rule.
+- `rule_type` (ENUM 'points', 'tier', 'milestone', 'mukando', 'eco'): The type of loyalty rule.
+- `rule_json` (JSONB): A flexible JSON object to store the specific logic for each rule type (e.g., { "action": "purchase", "value": 1, "currency": "USD" }).
+
+#### `offers` table
+- `id` (UUID, PRIMARY KEY): Unique identifier for an offer.
+- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business creating the offer.
+- `offer_name` (VARCHAR(255)): Name of the offer (e.g., "Lunchtime Special").
+- `description` (TEXT): Details about the offer.
+- `points_required` (INTEGER): Points needed to redeem the offer.
+- `is_geo_fenced` (BOOLEAN): Flag if the offer is location-based.
+- `geo_fence` (GEOMETRY(Polygon, 4326)): PostGIS column to define the geofence area.
+- `active_from` (TIMESTAMP WITH TIME ZONE): Start time of the offer.
+- `active_to` (TIMESTAMP WITH TIME ZONE): End time of the offer.
+
+### 5.3. Mukando & AI Integrations
+
+#### `mukando_groups` table
+- `id` (UUID, PRIMARY KEY): Unique identifier for a Mukando group.
+- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business running the group.
+- `group_name` (VARCHAR(255)): Name of the group.
+- `current_payout_user_id` (UUID, FOREIGN KEY REFERENCES customers(user_id)): Who receives the payout next.
+- `total_pot` (DECIMAL(10, 2)): The total value collected in the pot.
+
+#### `mukando_contributions` table
+- `id` (UUID, PRIMARY KEY): Unique identifier for a contribution.
+- `group_id` (UUID, FOREIGN KEY REFERENCES mukando_groups(id)): The group this contribution belongs to.
+- `customer_id` (UUID, FOREIGN KEY REFERENCES customers(user_id)): The customer who contributed.
+- `amount` (DECIMAL(10, 2)): The amount contributed.
+- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of the contribution.
+
+#### `ai_insights` table
+- `id` (UUID, PRIMARY KEY): Unique identifier for an insight.
+- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business the insight is for.
+- `insight_type` (ENUM 'churn_prediction', 'segmentation', 'feedback_summary'): The type of AI insight.
+- `insight_json` (JSONB): A flexible JSON object to store the insight data (e.g., { "customer_id": "...", "risk_score": 0.85, "recommendation": "send win-back offer" }).
+- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of the insight generation.
+
+### 5.4. Security & Logging
+
+#### `audit_logs` table
+- `id` (UUID, PRIMARY KEY): Unique identifier for the log entry.
+- `user_id` (UUID, FOREIGN KEY REFERENCES users(id)): The user who performed the action.
+- `action` (TEXT): A description of the action (e.g., "Manual point adjustment").
+- `details` (JSONB): A JSON object with relevant details (e.g., { "customer_id": "...", "old_points": 100, "new_points": 150 }).
+- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of the action.
