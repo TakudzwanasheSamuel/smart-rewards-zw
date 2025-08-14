@@ -1,19 +1,11 @@
 
 "use client"
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { Button } from '../ui/button';
 import { Building } from 'lucide-react';
-
-// Mock data for business locations
-const businesses = [
-    { id: 1, name: 'Chicken Inn', position: [-17.8252, 31.0335], offer: 'Free side with combo' },
-    { id: 2, name: 'Cafe Nush', position: [-17.829, 31.0489], offer: '2-for-1 Coffee' },
-    { id: 3, name: 'OK Mart', position: [-17.8639, 31.0297], offer: '10% off groceries' },
-    { id: 4, 'name': 'Joina City', position: [-17.831, 31.0522], offer: 'Various retail discounts' },
-];
 
 // Fix for default icon not showing in Leaflet when used with Webpack
 const defaultIcon = new L.Icon({
@@ -25,14 +17,35 @@ const defaultIcon = new L.Icon({
     popupAnchor: [1, -34],
     shadowSize: [41, 41]
 });
-
 L.Marker.prototype.options.icon = defaultIcon;
 
+
+// Mock data for business locations
+const businesses = [
+    { id: 1, name: 'Chicken Inn', position: [-17.8252, 31.0335], offer: 'Free side with combo' },
+    { id: 2, name: 'Cafe Nush', position: [-17.829, 31.0489], offer: '2-for-1 Coffee' },
+    { id: 3, name: 'OK Mart', position: [-17.8639, 31.0297], offer: '10% off groceries' },
+    { id: 4, name: 'Joina City', position: [-17.831, 31.0522], offer: 'Various retail discounts' },
+];
+
+
 export default function MapView() {
-    const hararePosition: [number, number] = [-17.8252, 31.0335]; // Default center to Harare
+    const hararePosition: [number, number] = [-17.8252, 31.0335];
+
+    if (typeof window === 'undefined') {
+      return null;
+    }
 
     return (
-        <MapContainer center={hararePosition} zoom={13} scrollWheelZoom={true} className="h-full w-full rounded-lg z-0">
+        <MapContainer
+            center={hararePosition}
+            zoom={13}
+            scrollWheelZoom={true}
+            className="h-full w-full rounded-lg z-0"
+            whenReady={() => {
+              console.log('Map is ready');
+            }}
+            >
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -54,5 +67,3 @@ export default function MapView() {
         </MapContainer>
     )
 }
-
-    
