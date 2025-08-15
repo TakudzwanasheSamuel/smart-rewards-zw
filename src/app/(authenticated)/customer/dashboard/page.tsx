@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Leaf, Wallet, Users, ArrowRight, Award, Trophy, QrCode } from "lucide-react";
 import Link from "next/link";
 import PersonalizedOffers from "@/components/customer/personalized-offers";
+import CheckInButton from "@/components/customer/check-in-button";
 
 const badges = [
   { icon: Trophy, label: "Mukando Starter" },
@@ -18,12 +19,15 @@ export default function CustomerDashboard() {
           <h1 className="text-2xl font-bold font-headline tracking-tight">Welcome Back!</h1>
           <p className="text-muted-foreground">Here&apos;s your loyalty summary.</p>
         </div>
-        <Link href="/customer/scan" passHref>
-            <Button size="lg">
-                <QrCode className="mr-2 h-5 w-5" />
-                Scan & Earn
-            </Button>
-        </Link>
+        <div className="flex gap-2">
+            <CheckInButton />
+            <Link href="/customer/scan" passHref>
+                <Button size="lg">
+                    <QrCode className="mr-2 h-5 w-5" />
+                    Scan & Earn
+                </Button>
+            </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
