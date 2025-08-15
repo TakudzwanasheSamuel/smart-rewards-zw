@@ -1,3 +1,7 @@
+
+"use client";
+
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -7,9 +11,11 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Tag, ShieldQuestion } from "lucide-react";
+import { ArrowLeft, MapPin, ShieldQuestion, UserPlus, UserMinus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
+
 
 const business = {
   id: "biz-001",
@@ -42,6 +48,17 @@ const offers = [
 ];
 
 export default function BusinessProfilePage({ params }: { params: { id: string } }) {
+  const { toast } = useToast();
+  const [isCustomer, setIsCustomer] = useState(false);
+
+  const handleToggleCustomer = () => {
+    setIsCustomer(!isCustomer);
+    toast({
+        title: isCustomer ? `You are no longer following ${business.name}` : `You are now following ${business.name}!`,
+        description: isCustomer ? "You won't receive their exclusive updates." : "You'll now see their offers on your dashboard.",
+    });
+  }
+
   // In a real app, you would fetch business data based on params.id
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
@@ -72,6 +89,10 @@ export default function BusinessProfilePage({ params }: { params: { id: string }
               </span>
             </CardDescription>
           </div>
+           <Button variant={isCustomer ? "destructive" : "default"} onClick={handleToggleCustomer}>
+              {isCustomer ? <UserMinus className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />}
+              {isCustomer ? "Unfollow Business" : "Follow Business"}
+            </Button>
         </CardHeader>
         <CardContent>
             <div className="flex items-center p-3 mb-6 bg-muted rounded-lg text-sm">
