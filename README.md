@@ -102,6 +102,12 @@ This schema is designed for a full-stack Next.js application using PostgreSQL wi
 - `logo_url` (VARCHAR(255)): URL for the business logo.
 - `contact_phone` (VARCHAR(50)): Business phone number.
 - `location` (GEOMETRY(Point, 4326)): PostGIS column to store the business's location as a point.
+- `shared_loyalty_id` (UUID, NULLABLE): An optional identifier to group businesses into a shared network.
+
+#### `customer_business_relations` table
+- `customer_id` (UUID, FOREIGN KEY REFERENCES customers(user_id)): The customer's ID.
+- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business's ID.
+- PRIMARY KEY (`customer_id`, `business_id`): Ensures a customer can only follow a business once.
 
 ### 5.2. Loyalty Engine & Transaction Logic
 

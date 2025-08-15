@@ -31,6 +31,12 @@ export type Business = {
   logo_url?: string;
   contact_phone?: string;
   location: any; // PostGIS Geometry(Point, 4326)
+  shared_loyalty_id?: string; // UUID
+};
+
+export type CustomerBusinessRelation = {
+  customer_id: string; // UUID, Foreign Key to customers(user_id)
+  business_id: string; // UUID, Foreign Key to businesses(user_id)
 };
 
 // 2. Loyalty Engine & Transaction Logic
@@ -76,7 +82,7 @@ export type MukandoGroup = {
 export type MukandoContribution = {
   id: string; // UUID
   group_id: string; // UUID, Foreign Key to mukando_groups(id)
-  customer_id: string; // UUID, Foreign Key to customers(user_id)
+  customer_id: string; // UUID, Foreign key to customers(user_id)
   amount: number; // Decimal
   created_at: Date;
 };
