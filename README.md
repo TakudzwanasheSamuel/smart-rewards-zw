@@ -4,6 +4,8 @@
 ## Core Vision
 Smart Rewards ZW is a multi-tenant, AI-powered, location-based loyalty ecosystem designed to empower all Zimbabwean businesses—from the corner barber to the national supermarket chain. By combining AI, location intelligence, offline-first technology, and Zimbabwe’s own Mukando/maRound traditions, we create a connected network where loyalty is personalized, community-driven, and even financially empowering. We go beyond simple points to boost retention, drive sales in slow periods, and deliver real social and economic impact.
 
+This prototype demonstrates the core user flows and advanced features of the platform, built with a modern Next.js frontend and a clear roadmap for a full-stack, AI-integrated backend.
+
 ---
 
 ## 1. Core Functional Modules
@@ -12,158 +14,125 @@ Smart Rewards ZW is a multi-tenant, AI-powered, location-based loyalty ecosystem
 A flexible logic system to manage points, Eco-Points, service eligibility, and benefits based on tiers and milestones.
 
 **Supported Models:**
-- **Points:** Classic point-based systems.
-- **Tiers & Milestones:** E.g., a "Gold Tier" for hardware store contractors or a "free haircut after 5 visits" milestone for a barbershop.
-- **Mukando/maRound Groups:** The engine will manage the rotation of payouts, with bonus point allocation for payout recipients.
+- **Points & Tiers:** Classic point-based systems combined with tiered memberships (e.g., Bronze, Silver, Gold) that offer escalating benefits.
+- **Mukando/maRound Groups:** The engine manages community savings groups, tracking contributions and payout order.
+- **Gamification**: Customers can participate in challenges (e.g., "Visit 3 times this month") to earn badges and bonus points.
 
 **Rules Based on Customer Actions:**
-- Purchases, visits, check-ins, and referrals.
-- Digital Engagement: Rewarding social media shares or app interactions.
-- Sustainable Actions: Awarding Eco-Points for using reusable bags or digital receipts.
-- **AI-Driven Behavior Analysis:** The AI dynamically adapts reward offers based on customer activity, purchase history, and Mukando/maRound participation to maximize engagement.
+- **Transactions**: Earn points via QR Code scans or receipt uploads.
+- **Engagement**: Earn rewards for check-ins, referrals, and social sharing.
+- **Sustainability**: Awarding Eco-Points for eco-friendly actions, which can be manually adjusted by admins.
 
 ### Customer Wallet & Profile
-- **Comprehensive Tracking:** Tracks standard points, service eligibility, and engagement history.
-- **Loyalty Tier & Activity Logs:** Detailed logs of customer activities, tier progression, and location-based check-ins.
-- **Financial Inclusion Tracking:** Logs Loyalty Bonds created and Mukando contributions.
+- **Comprehensive Tracking:** A unified view of standard points, Eco-Points, shared network points, and loyalty tier status.
+- **Smart Wallet Features**: The wallet includes views for transaction history, loyalty bonds (long-term value conversion), and innovative concepts like Skill-Swap and a Trust Score for micro-lending.
 - **AI-Powered Segmentation:** The AI segments customers for personalized experiences and delivers targeted, context-based offers via the platform.
-- **Flexible Redemption:** Customers can redeem points directly via the mobile/web app, USSD, or WhatsApp chatbot.
+- **Business Discovery**: Customers can explore businesses via a filterable list or an interactive map showing nearby offers.
 
 ### Admin Dashboard
-- **Program Configuration:** Business owners can configure loyalty rules, set up Mukando groups, and define maRound cycles.
-- **Performance Monitoring:** View customer activity, track Mukando/maRound progress, monitor redemption rates, and manage eligibility-based offers.
-- **Manual Override Tools:** Provides tools for manually adjusting points, approving offers, and managing Mukando group memberships.
-- **AI Insights & Prediction:** The dashboard provides AI-driven insights, churn prediction to trigger retention campaigns, and natural language summarization of customer feedback to guide decision-making.
-- **Redemption Logic:** Admins can set rules for point redemption, including what offers are available and any time or tier restrictions.
-
-### User Interface (Web or Mobile)
-- **Intuitive Display:** A simple, clean interface to view points, Eco-Points, service eligibility, and available location-based offers.
-- **Notifications:** Real-time push notifications for new benefits, tier upgrades, Mukando/maRound payouts, or expiring points.
-- **Gamification:** Optional features like badges and progress bars to make earning rewards fun and engaging.
-- **AI-Generated Recommendations:** The AI suggests personalized offers, Mukando groups to join, or products to save for based on user behavior.
+- **Program Configuration:** Business owners can configure loyalty rules, set up tiers, create offers, and define Mukando cycles.
+- **Performance Monitoring:** View customer activity, track who is "following" their business, monitor redemption rates, and manage offers.
+- **Manual Override Tools:** Provides tools for manually adjusting points (both loyalty and eco) and approving offers for specific customers.
+- **AI Insights & Prediction:** The dashboard provides AI-driven insights, churn prediction to trigger retention campaigns, and natural language summarization of customer feedback.
 
 ---
 
 ## 2. Security Requirements
 - **Authentication & Access Control:** Robust user authentication for both customers and merchants, with granular access control for the admin dashboard.
-- **Data Encryption:** All sensitive data (customer profiles, transaction history, Mukando pot details) must be encrypted both in transit (using HTTPS/TLS) and at rest (using AES-256).
-- **Fraud Prevention:** AI-powered fraud detection for point/service transactions, with secure logging and verification for all redemptions (including USSD and WhatsApp).
-- **Secure APIs & Audit Logging:** All APIs must be secured with authentication tokens. A complete audit log of all transactions, point adjustments, and system changes will be maintained.
-- **Controls for Transfers:** Secure controls for point transfers or Skill-Swap transactions to prevent unauthorized activity.
+- **Data Encryption:** All sensitive data must be encrypted both in transit (HTTPS/TLS) and at rest.
+- **Fraud Prevention:** AI-powered fraud detection for transactions and secure logging for all redemptions.
+- **Secure APIs & Audit Logging:** All APIs must be secured. A complete audit log of all transactions and manual adjustments will be maintained.
 
 ---
 
-## 3. AI Integration Suggestions
-- **Behavior Prediction:** Predict customer actions, such as their next visit to a barbershop, to trigger proactive engagement.
-- **Churn Detection:** Identify customers who have skipped usual visits and trigger retention workflows with personalized win-back offers.
-- **Smart Segmentation:** Create dynamic, targeted campaigns based on customer behavior, location, and Mukando group participation.
-- **Natural Language Summarization:** Use NLP to summarize user feedback from chats and social media, giving merchants quick, actionable insights.
-- **Location-Aware Intelligence:** Use geo-fencing and real-time location data to provide context-based offers (e.g., a "Rainy Day Special" on a cold, wet day).
+## 3. AI Integration
+- **Personalized Offers**: Genkit flow `personalized-offers` recommends deals based on user preferences and location.
+- **Churn Detection**: Genkit flow `predict-churn` identifies at-risk customers for proactive engagement.
+- **Receipt Processing**: Genkit flow `process-receipt` uses OCR to extract data from uploaded receipt images.
+- **Location Verification**: Genkit flow `verify-location` uses simulated geo-fencing to validate customer check-ins.
+- **Feedback Summary**: Genkit flow `summarize-feedback` analyzes and summarizes customer feedback.
 
 ---
 
-## 4. Points Earning Logic
-- **Customer Actions:** Points are earned through relevant customer actions, including purchases, store visits, referrals, and digital engagement.
-- **Mukando Contributions:** A portion of each purchase is allocated to the Mukando pot, and bonus points are awarded for consistent contributions.
-- **Location-Based Triggers:** Customers can earn points for store visits, event check-ins, or passing by a geo-fenced location.
-- **Sustainability:** Eco-Points are earned for environmentally friendly actions.
-- **Traceability Rewards:** Bonus points are earned for scanning a QR code on products to verify their origin.
-- **Verification:** All point-earning actions will include secure verification and logging to prevent fraud and ensure data integrity.
+## 4. Database Schema
 
----
+This schema is designed for a full-stack Next.js application using PostgreSQL with the PostGIS extension.
 
-## 5. Database Schema
-
-This schema is designed for a full-stack Next.js application using PostgreSQL with the PostGIS extension for geospatial data.
-
-### 5.1. User & Business Management
+### 4.1. User & Business Management
 
 #### `users` table
-- `id` (UUID, PRIMARY KEY): Unique identifier for a user (customer or business).
-- `email` (VARCHAR(255), UNIQUE): User's email address.
-- `password_hash` (VARCHAR(255)): Securely stored password hash.
-- `user_type` (ENUM 'customer', 'business'): Differentiates between customers and business accounts.
-- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of account creation.
-- `updated_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of last update.
+- `id` (UUID, PRIMARY KEY): Unique identifier for a user.
+- `email` (VARCHAR, UNIQUE): User's email.
+- `password_hash` (VARCHAR): Hashed password.
+- `user_type` (ENUM 'customer', 'business'): Differentiates account types.
+- `created_at`, `updated_at` (TIMESTAMPTZ).
 
 #### `customers` table
-- `user_id` (UUID, PRIMARY KEY, FOREIGN KEY REFERENCES users(id)): Links to the core user account.
-- `full_name` (VARCHAR(255)): Customer's full name.
-- `interests` (TEXT[]): An array of strings for their interests (e.g., {'fast food', 'salons'}).
-- `loyalty_points` (INTEGER, DEFAULT 0): The customer's current points balance.
-- `eco_points` (INTEGER, DEFAULT 0): Points earned for sustainable actions.
-- `loyalty_tier` (VARCHAR(50), DEFAULT 'Bronze'): Current loyalty tier.
-- `referral_code` (VARCHAR(50), UNIQUE): Unique code for referrals.
+- `user_id` (UUID, PRIMARY KEY, FOREIGN KEY): Links to `users`.
+- `full_name` (VARCHAR).
+- `interests` (TEXT[]): For AI personalization.
+- `loyalty_points` (INTEGER).
+- `eco_points` (INTEGER).
+- `loyalty_tier` (VARCHAR, DEFAULT 'Bronze').
+- `referral_code` (VARCHAR, UNIQUE).
+- `referred_by` (UUID): ID of the referrer.
+- `has_premium_subscription` (BOOLEAN).
+- `subscription_expiry_date` (TIMESTAMPTZ).
 
 #### `businesses` table
-- `user_id` (UUID, PRIMARY KEY, FOREIGN KEY REFERENCES users(id)): Links to the core user account.
-- `business_name` (VARCHAR(255)): Name of the business.
-- `business_category` (VARCHAR(50)): Category of the business (e.g., 'Fast Food').
-- `logo_url` (VARCHAR(255)): URL for the business logo.
-- `contact_phone` (VARCHAR(50)): Business phone number.
-- `location` (GEOMETRY(Point, 4326)): PostGIS column to store the business's location as a point.
-- `shared_loyalty_id` (UUID, NULLABLE): An optional identifier to group businesses into a shared network.
+- `user_id` (UUID, PRIMARY KEY, FOREIGN KEY): Links to `users`.
+- `business_name` (VARCHAR).
+- `business_category` (VARCHAR).
+- `logo_url` (VARCHAR).
+- `location` (GEOMETRY(Point, 4326)): PostGIS location.
+- `shared_loyalty_id` (UUID): Links businesses into a network.
 
 #### `customer_business_relations` table
-- `customer_id` (UUID, FOREIGN KEY REFERENCES customers(user_id)): The customer's ID.
-- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business's ID.
-- PRIMARY KEY (`customer_id`, `business_id`): Ensures a customer can only follow a business once.
+- `customer_id` (UUID, FOREIGN KEY).
+- `business_id` (UUID, FOREIGN KEY).
+- PRIMARY KEY (`customer_id`, `business_id`): For following businesses.
 
-### 5.2. Loyalty Engine & Transaction Logic
+### 4.2. Loyalty, Transactions & Offers
 
 #### `transactions` table
-- `id` (UUID, PRIMARY KEY): Unique identifier for a transaction.
-- `customer_id` (UUID, FOREIGN KEY REFERENCES customers(user_id)): The customer who made the purchase.
-- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business where the purchase was made.
-- `transaction_amount` (DECIMAL(10, 2)): Total value of the transaction.
-- `points_earned` (INTEGER): Points awarded for this transaction.
-- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of the transaction.
+- `id`, `customer_id`, `business_id` (UUID).
+- `transaction_amount` (DECIMAL).
+- `points_earned` (INTEGER).
+- `created_at` (TIMESTAMPTZ).
 
 #### `loyalty_rules` table
-- `id` (UUID, PRIMARY KEY): Unique identifier for a loyalty rule.
-- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business that owns this rule.
-- `rule_type` (ENUM 'points', 'tier', 'milestone', 'mukando', 'eco'): The type of loyalty rule.
-- `rule_json` (JSONB): A flexible JSON object to store the specific logic for each rule type (e.g., { "action": "purchase", "value": 1, "currency": "USD" }).
+- `id`, `business_id` (UUID).
+- `rule_type` (ENUM 'points', 'tier', 'milestone', 'mukando', 'eco').
+- `rule_json` (JSONB): Flexible rule definitions.
 
 #### `offers` table
-- `id` (UUID, PRIMARY KEY): Unique identifier for an offer.
-- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business creating the offer.
-- `offer_name` (VARCHAR(255)): Name of the offer (e.g., "Lunchtime Special").
-- `description` (TEXT): Details about the offer.
-- `points_required` (INTEGER): Points needed to redeem the offer.
-- `is_geo_fenced` (BOOLEAN): Flag if the offer is location-based.
-- `geo_fence` (GEOMETRY(Polygon, 4326)): PostGIS column to define the geofence area.
-- `active_from` (TIMESTAMP WITH TIME ZONE): Start time of the offer.
-- `active_to` (TIMESTAMP WITH TIME ZONE): End time of the offer.
+- `id`, `business_id` (UUID).
+- `offer_name` (VARCHAR), `description` (TEXT).
+- `points_required` (INTEGER).
+- `is_geo_fenced` (BOOLEAN), `geo_fence` (GEOMETRY(Polygon, 4326)).
+- `active_from`, `active_to` (TIMESTAMPTZ).
+- `reward_type` (VARCHAR, DEFAULT 'monetary').
+- `is_coupon` (BOOLEAN), `discount_code` (VARCHAR).
 
-### 5.3. Mukando & AI Integrations
+### 4.3. Mukando, Gamification & AI
 
 #### `mukando_groups` table
-- `id` (UUID, PRIMARY KEY): Unique identifier for a Mukando group.
-- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business running the group.
-- `group_name` (VARCHAR(255)): Name of the group.
-- `current_payout_user_id` (UUID, FOREIGN KEY REFERENCES customers(user_id)): Who receives the payout next.
-- `total_pot` (DECIMAL(10, 2)): The total value collected in the pot.
+- `id`, `business_id`, `current_payout_user_id` (UUID).
+- `group_name` (VARCHAR).
+- `total_pot` (DECIMAL).
 
 #### `mukando_contributions` table
-- `id` (UUID, PRIMARY KEY): Unique identifier for a contribution.
-- `group_id` (UUID, FOREIGN KEY REFERENCES mukando_groups(id)): The group this contribution belongs to.
-- `customer_id` (UUID, FOREIGN KEY REFERENCES customers(user_id)): The customer who contributed.
-- `amount` (DECIMAL(10, 2)): The amount contributed.
-- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of the contribution.
+- `id`, `group_id`, `customer_id` (UUID).
+- `amount` (DECIMAL).
+- `created_at` (TIMESTAMPTZ).
+
+#### `challenges` & `customer_challenges` tables
+- For tracking gamified tasks and customer progress.
 
 #### `ai_insights` table
-- `id` (UUID, PRIMARY KEY): Unique identifier for an insight.
-- `business_id` (UUID, FOREIGN KEY REFERENCES businesses(user_id)): The business the insight is for.
-- `insight_type` (ENUM 'churn_prediction', 'segmentation', 'feedback_summary'): The type of AI insight.
-- `insight_json` (JSONB): A flexible JSON object to store the insight data (e.g., { "customer_id": "...", "risk_score": 0.85, "recommendation": "send win-back offer" }).
-- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of the insight generation.
+- Stores results from AI models like churn prediction.
 
-### 5.4. Security & Logging
+### 4.4. Security
 
 #### `audit_logs` table
-- `id` (UUID, PRIMARY KEY): Unique identifier for the log entry.
-- `user_id` (UUID, FOREIGN KEY REFERENCES users(id)): The user who performed the action.
-- `action` (TEXT): A description of the action (e.g., "Manual point adjustment").
-- `details` (JSONB): A JSON object with relevant details (e.g., { "customer_id": "...", "old_points": 100, "new_points": 150 }).
-- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT now()): Timestamp of the action.
+- Logs manual actions like point adjustments for traceability.

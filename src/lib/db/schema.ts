@@ -22,6 +22,9 @@ export type Customer = {
   eco_points: number;
   loyalty_tier: string;
   referral_code: string;
+  referred_by?: string; // UUID of another User
+  has_premium_subscription: boolean;
+  subscription_expiry_date?: Date;
 };
 
 export type Business = {
@@ -67,9 +70,12 @@ export type Offer = {
   geo_fence?: any; // PostGIS Geometry(Polygon, 4326)
   active_from: Date;
   active_to: Date;
+  reward_type: 'monetary' | 'experiential';
+  is_coupon: boolean;
+  discount_code?: string;
 };
 
-// 3. Mukando & AI Integrations
+// 3. Mukando, Gamification & AI Integrations
 
 export type MukandoGroup = {
   id: string; // UUID
@@ -85,6 +91,23 @@ export type MukandoContribution = {
   customer_id: string; // UUID, Foreign key to customers(user_id)
   amount: number; // Decimal
   created_at: Date;
+};
+
+export type Challenge = {
+  id: string; // UUID
+  challenge_name: string;
+  description: string;
+  type: 'visits' | 'purchases';
+  goal: number;
+  reward_points: number;
+};
+
+export type CustomerChallenge = {
+  id: string; // UUID
+  customer_id: string; // UUID, Foreign Key to customers(user_id)
+  challenge_id: string; // UUID, Foreign Key to challenges(id)
+  current_progress: number;
+  is_completed: boolean;
 };
 
 export type AiInsight = {
