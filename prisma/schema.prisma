@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password_hash String
+  user_type     String
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  customer      Customer?
+  business      Business?
+  audit_logs    AuditLog[]
+}
+
+model Customer {
+  user_id                  String    @id
+  full_name                String?
+  interests                String[]
+  loyalty_points           Int       @default(0)
+  eco_points               Int       @default(0)
+  loyalty_tier             String    @default("Bronze")
+  referral_code            String?   @unique
+  referred_by              String?
+  has_premium_subscription Boolean   @default(false)
+  subscription_expiry_date DateTime?
+  user                     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  customer_business_relations CustomerBusinessRelation[]
+  transactions             Transaction[]
+  mukando_groups           MukandoGroup[]
+  mukando_contributions    MukandoContribution[]
+  customer_challenges      CustomerChallenge[]
+}
+
+model Business {
+  user_id                  String    @id
+  business_name            String
+  business_category        String?
+  logo_url                 String?
+  contact_phone            String?
+  location                 String? // Assuming GEOMETRY is not directly supported, using String for now
+  shared_loyalty_id        String?
+  user                     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  customer_business_relations CustomerBusinessRelation[]
+  transactions             Transaction[]
+  loyalty_rules            LoyaltyRule[]
+  offers                   Offer[]
+  mukando_groups           MukandoGroup[]
+  ai_insights              AiInsight[]
+}
+
+model CustomerBusinessRelation {
+  customer_id String
+  business_id String
+  customer    Customer @relation(fields: [customer_id], references: [user_id], onDelete: Cascade)
+  business    Business @relation(fields: [business_id], references: [user_id], onDelete: Cascade)
+
+  @@id([customer_id, business_id])
+}
+
+model Transaction {
+  id                 String   @id @default(uuid())
+  customer_id        String
+  business_id        String
+  transaction_amount Decimal?
+  points_earned      Int?
+  created_at         DateTime @default(now())
+  customer           Customer @relation(fields: [customer_id], references: [user_id])
+  business           Business @relation(fields: [business_id], references: [user_id])
+}
+
+model LoyaltyRule {
+  id          String   @id @default(uuid())
+  business_id String
+  rule_type   String
+  rule_json   Json
+  business    Business @relation(fields: [business_id], references: [user_id])
+}
+
+model Offer {
+  id              String    @id @default(uuid())
+  business_id     String
+  offer_name      String
+  description     String?
+  points_required Int?
+  is_geo_fenced   Boolean   @default(false)
+  geo_fence       String? // Assuming GEOMETRY is not directly supported, using String for now
+  active_from     DateTime?
+  active_to       DateTime?
+  reward_type     String    @default("monetary")
+  is_coupon       Boolean   @default(false)
+  discount_code   String?
+  business        Business  @relation(fields: [business_id], references: [user_id])
+}
+
+model MukandoGroup {
+  id                     String                @id @default(uuid())
+  business_id            String
+  group_name             String
+  current_payout_user_id String?
+  total_pot              Decimal?              @default(0)
+  business               Business              @relation(fields: [business_id], references: [user_id])
+  payout_user            Customer?             @relation(fields: [current_payout_user_id], references: [user_id])
+  mukando_contributions  MukandoContribution[]
+}
+
+model MukandoContribution {
+  id          String   @id @default(uuid())
+  group_id    String
+  customer_id String
+  amount      Decimal?
+  created_at  DateTime @default(now())
+  group       MukandoGroup @relation(fields: [group_id], references: [id])
+  customer    Customer     @relation(fields: [customer_id], references: [user_id])
+}
+
+model Challenge {
+  id                  String              @id @default(uuid())
+  challenge_name      String
+  description         String?
+  type                String?
+  goal                Int?
+  reward_points       Int?
+  customer_challenges CustomerChallenge[]
+}
+
+model CustomerChallenge {
+  id               String    @id @default(uuid())
+  customer_id      String
+  challenge_id     String
+  current_progress Int       @default(0)
+  is_completed     Boolean   @default(false)
+  customer         Customer  @relation(fields: [customer_id], references: [user_id])
+  challenge        Challenge @relation(fields: [challenge_id], references: [id])
+}
+
+model AiInsight {
+  id           String   @id @default(uuid())
+  business_id  String
+  insight_type String
+  insight_json Json
+  created_at   DateTime @default(now())
+  business     Business @relation(fields: [business_id], references: [user_id])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  user_id    String?
+  action     String
+  details    Json?
+  created_at DateTime @default(now())
+  user       User?    @relation(fields: [user_id], references: [id])
+}
+
+enum UserType {
+  customer
+  business
+}
+
+enum RuleType {
+  points
+  tier
+  milestone
+  mukando
+  eco
+}
+
+enum InsightType {
+  churn_prediction
+  segmentation
+  feedback_summary
+}
