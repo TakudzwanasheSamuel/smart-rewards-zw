@@ -22,6 +22,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 const RulesMapView = dynamic(() => import('@/components/admin/rules-map-view'), {
     ssr: false,
@@ -36,6 +38,23 @@ const FormSchema = z.object({
   tierName: z.string().min(1, "Tier name is required"),
   pointsToReach: z.coerce.number().min(1, "Must be greater than 0"),
 });
+
+const mukandoGroups = [
+  { 
+    id: "MKD-001", 
+    name: "Q3 Savings Circle", 
+    members: ["Tafadzwa Chihwa", "Rudo Moyo", "Fadzai Shumba"], 
+    pot: 60, 
+    turn: "Rudo Moyo" 
+  },
+  { 
+    id: "MKD-002", 
+    name: "Holiday Fund", 
+    members: ["Kudakwashe Banda", "Tendai Mapuranga"], 
+    pot: 40, 
+    turn: "Tendai Mapuranga" 
+  },
+]
 
 export default function RulesPage() {
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -188,34 +207,60 @@ export default function RulesPage() {
             </TabsContent>
 
              <TabsContent value="mukando">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Mukando/maRound Manager</CardTitle>
-                        <CardDescription>Create and track savings groups.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <FormItem>
-                            <FormLabel>Group Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g., Q3 Savings Circle" />
-                            </FormControl>
-                        </FormItem>
-                        <FormItem>
-                            <FormLabel>Contribution Amount ($)</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="e.g., 20" />
-                            </FormControl>
-                             <FormDescription>The fixed amount each member contributes per cycle.</FormDescription>
-                        </FormItem>
-                        <FormItem>
-                            <FormLabel>Number of Members</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="e.g., 10" />
-                            </FormControl>
-                        </FormItem>
-                        <Button>Create New Group</Button>
-                    </CardContent>
-                </Card>
+                <div className="grid gap-6">
+                  <Card>
+                      <CardHeader>
+                          <CardTitle>Create New Mukando Group</CardTitle>
+                          <CardDescription>Launch a new savings group for your customers.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                          <FormItem>
+                              <FormLabel>Group Name</FormLabel>
+                              <FormControl>
+                                  <Input placeholder="e.g., Q4 Festive Fund" />
+                              </FormControl>
+                          </FormItem>
+                          <FormItem>
+                              <FormLabel>Contribution Amount ($)</FormLabel>
+                              <FormControl>
+                                  <Input type="number" placeholder="e.g., 20" />
+                              </FormControl>
+                              <FormDescription>The fixed amount each member contributes per cycle.</FormDescription>
+                          </FormItem>
+                          <Button>Create New Group</Button>
+                      </CardContent>
+                  </Card>
+                  <Card>
+                      <CardHeader>
+                          <CardTitle>Manage Active Groups</CardTitle>
+                          <CardDescription>View member lists, contributions, and payout order.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Group Name</TableHead>
+                              <TableHead>Members</TableHead>
+                              <TableHead>Total Pot</TableHead>
+                              <TableHead>Next Payout</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {mukandoGroups.map((group) => (
+                              <TableRow key={group.id}>
+                                <TableCell className="font-medium">{group.name}</TableCell>
+                                <TableCell>{group.members.length}</TableCell>
+                                <TableCell>${group.pot.toFixed(2)}</TableCell>
+                                <TableCell>
+                                  <Badge variant="secondary">{group.turn}</Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                  </Card>
+                </div>
             </TabsContent>
             <Button type="submit" className="w-full">Save All Rules</Button>
           </form>

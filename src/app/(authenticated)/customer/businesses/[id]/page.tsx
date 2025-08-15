@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, ShieldQuestion, UserPlus, UserMinus } from "lucide-react";
+import { ArrowLeft, MapPin, ShieldQuestion, UserPlus, UserMinus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -50,12 +50,21 @@ const offers = [
 export default function BusinessProfilePage({ params }: { params: { id: string } }) {
   const { toast } = useToast();
   const [isCustomer, setIsCustomer] = useState(false);
+  const [isInMukando, setIsInMukando] = useState(false);
 
   const handleToggleCustomer = () => {
     setIsCustomer(!isCustomer);
     toast({
         title: isCustomer ? `You are no longer following ${business.name}` : `You are now following ${business.name}!`,
         description: isCustomer ? "You won't receive their exclusive updates." : "You'll now see their offers on your dashboard.",
+    });
+  }
+
+  const handleJoinMukando = () => {
+    setIsInMukando(true);
+    toast({
+        title: `You've joined the Mukando group!`,
+        description: `Your contributions will now be tracked.`,
     });
   }
 
@@ -95,9 +104,20 @@ export default function BusinessProfilePage({ params }: { params: { id: string }
             </Button>
         </CardHeader>
         <CardContent>
-            <div className="flex items-center p-3 mb-6 bg-muted rounded-lg text-sm">
-                <ShieldQuestion className="h-5 w-5 mr-3 text-primary" />
-                <span className="font-medium text-muted-foreground">{business.loyaltyRule}</span>
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="flex items-center p-3 flex-grow bg-muted rounded-lg text-sm">
+                    <ShieldQuestion className="h-5 w-5 mr-3 text-primary" />
+                    <span className="font-medium text-muted-foreground">{business.loyaltyRule}</span>
+                </div>
+                 <div className="flex items-center p-3 flex-grow bg-muted rounded-lg text-sm">
+                    <Users className="h-5 w-5 mr-3 text-primary" />
+                    <div className="flex-grow">
+                        <span className="font-medium text-muted-foreground">This business runs a Mukando group.</span>
+                    </div>
+                    <Button size="sm" onClick={handleJoinMukando} disabled={isInMukando}>
+                        {isInMukando ? "Joined" : "Join Group"}
+                    </Button>
+                </div>
             </div>
 
             <h2 className="text-xl font-bold font-headline mb-4">Active Offers</h2>

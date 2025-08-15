@@ -52,7 +52,7 @@ const transactions = [
 ];
 
 export default function CustomersPage() {
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [actionType, setActionType] = useState("");
 
@@ -75,7 +75,7 @@ export default function CustomersPage() {
               className="pl-8 sm:w-full"
             />
           </div>
-          <div className="flex gap-2 w-full md:w-auto">
+          <div className="flex gap-2 w-full md:w-auto ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full">
@@ -146,6 +146,7 @@ export default function CustomersPage() {
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => handleActionClick(customer, 'profile')}>View profile</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleActionClick(customer, 'points')}>Adjust points</DropdownMenuItem>
+                         <DropdownMenuItem onClick={() => handleActionClick(customer, 'eco-points')}>Adjust Eco-Points</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleActionClick(customer, 'offer')}>Approve offer</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive">
@@ -161,7 +162,6 @@ export default function CustomersPage() {
         </div>
       </div>
       
-      {/* Modals for actions */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
           {actionType === 'profile' && selectedCustomer && (
@@ -177,8 +177,8 @@ export default function CustomersPage() {
                     <p className="text-xs text-muted-foreground mt-1">Progress to next tier</p>
                 </div>
                 <div>
-                  <Label>Points Balance</Label>
-                  <p className="font-bold text-lg">{selectedCustomer.points.toLocaleString()} pts / {selectedCustomer.ecoPoints} eco-pts</p>
+                  <Label>Balances</Label>
+                  <p className="font-bold text-lg">{selectedCustomer.points.toLocaleString()} pts / {selectedCustomer.ecoPoints.toLocaleString()} eco-pts</p>
                 </div>
                 <div>
                    <Label>Transaction History</Label>
@@ -216,6 +216,29 @@ export default function CustomersPage() {
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="reason" className="text-right">Reason</Label>
                   <Input id="reason" placeholder="e.g., Customer service gesture" className="col-span-3" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                <Button onClick={() => setIsModalOpen(false)}>Confirm Adjustment</Button>
+              </DialogFooter>
+            </>
+          )}
+
+           {actionType === 'eco-points' && selectedCustomer && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Adjust Eco-Points for {selectedCustomer.name}</DialogTitle>
+                <DialogDescription>Current Balance: {selectedCustomer.ecoPoints.toLocaleString()} eco-points</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="eco-points-change" className="text-right">Amount</Label>
+                  <Input id="eco-points-change" type="number" defaultValue="50" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="reason" className="text-right">Reason</Label>
+                  <Input id="reason" placeholder="e.g., Sustainable action reward" className="col-span-3" />
                 </div>
               </div>
               <DialogFooter>

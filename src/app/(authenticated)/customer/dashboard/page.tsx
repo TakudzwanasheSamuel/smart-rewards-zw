@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Leaf, Wallet, Users, ArrowRight, Award, Trophy, QrCode } from "lucide-react";
+import { Leaf, Wallet, Users, ArrowRight, Award, Trophy, QrCode, Globe } from "lucide-react";
 import Link from "next/link";
 import PersonalizedOffers from "@/components/customer/personalized-offers";
 import CheckInButton from "@/components/customer/check-in-button";
@@ -33,7 +33,7 @@ export default function CustomerDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Points</CardTitle>
+            <CardTitle className="text-sm font-medium">My Points</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -43,7 +43,7 @@ export default function CustomerDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Eco-Points</CardTitle>
+            <CardTitle className="text-sm font-medium">My Eco-Points</CardTitle>
             <Leaf className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -51,19 +51,29 @@ export default function CustomerDashboard() {
             <p className="text-xs text-muted-foreground">Making a green difference!</p>
           </CardContent>
         </Card>
-        <Card className="col-span-1 md:col-span-2">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Shared Network Points</CardTitle>
+                <Globe className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">4,210</div>
+                <p className="text-xs text-muted-foreground">Points from partner stores</p>
+            </CardContent>
+        </Card>
+        <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Loyalty Tier: Gold</CardTitle>
+            <CardTitle className="text-sm font-medium">Tier: Gold</CardTitle>
+             <CardDescription className="text-xs">470 pts to Platinum</CardDescription>
           </CardHeader>
-          <CardContent>
-             <div className="text-xs text-muted-foreground mb-2">You are 470 points away from Platinum</div>
+          <CardContent className="flex items-center pt-2">
             <Progress value={100 * (2530 / 3000)} className="w-full" />
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-         <Card>
+      <div className="grid gap-6 md:grid-cols-3">
+         <Card className="md:col-span-2">
             <CardHeader>
                 <CardTitle>My Wallet</CardTitle>
                 <CardDescription>View your transaction history, manage bonds and your smart wallet.</CardDescription>
@@ -79,7 +89,7 @@ export default function CustomerDashboard() {
         <Card>
             <CardHeader>
                 <CardTitle>My Mukando</CardTitle>
-                <CardDescription>Check the status of your savings groups.</CardDescription>
+                <CardDescription>Status of your savings groups.</CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="flex items-center space-x-4 rounded-md border p-4">
