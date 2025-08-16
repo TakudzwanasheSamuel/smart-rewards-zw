@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import { verifyLocation } from '@/ai/flows/verify-location';
 
 const prisma = new PrismaClient();
 
@@ -26,9 +27,17 @@ export async function POST(req: NextRequest) {
 
     const { businessId, coordinates } = await req.json();
 
-    // TODO: Call verifyLocation Genkit flow
+    // Call verifyLocation Genkit flow
+    const locationResult = await verifyLocation({
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
+    });
 
-    const pointsToAward = 10; // Example points for check-in
+    if (!locationResult.isVerified) {
+      return NextResponse.json({ error: 'Location verification failed' }, { status: 400 });
+    }
+
+    const pointsToAward = locationResult.pointsAwarded || 0;
 
     await prisma.transaction.create({
       data: {

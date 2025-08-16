@@ -41,7 +41,9 @@ I have created the complete backend structure for the Smart Rewards ZW applicati
 - `POST /api/admin/mukando`: Create a new Mukando group.
 
 ### Skipped Items
-- Direct integration with Genkit flows was not implemented, but placeholders have been left in the code.
-- PostGIS-based distance sorting for businesses was not implemented.
 - Frontend refactoring was not part of this task.
 - No tests were created for the endpoints.
+
+### Updates
+- Integrated Genkit flows for receipt processing and location verification.
+- Implemented PostGIS-based distance sorting for businesses.

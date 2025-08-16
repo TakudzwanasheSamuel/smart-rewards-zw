@@ -47,7 +47,7 @@ model Business {
   business_category        String?
   logo_url                 String?
   contact_phone            String?
-  location                 String? // Assuming GEOMETRY is not directly supported, using String for now
+  location                 Unsupported("geometry(Point, 4326)")?
   shared_loyalty_id        String?
   user                     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   customer_business_relations CustomerBusinessRelation[]
@@ -56,6 +56,8 @@ model Business {
   offers                   Offer[]
   mukando_groups           MukandoGroup[]
   ai_insights              AiInsight[]
+
+  @@index([location], name: "business_location_idx", type: Gist)
 }
 
 model CustomerBusinessRelation {
@@ -93,7 +95,7 @@ model Offer {
   description     String?
   points_required Int?
   is_geo_fenced   Boolean   @default(false)
-  geo_fence       String? // Assuming GEOMETRY is not directly supported, using String for now
+  geo_fence       Unsupported("geometry(Polygon, 4326)")?
   active_from     DateTime?
   active_to       DateTime?
   reward_type     String    @default("monetary")
