@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import { processReceipt } from '@/ai/flows/process-receipt';
 
 const prisma = new PrismaClient();
 
@@ -26,9 +27,14 @@ export async function POST(req: NextRequest) {
 
     const { qrCodeData, businessId, transactionAmount } = await req.json();
 
-    // TODO: Validate QR code data
+    // Call the processReceipt Genkit flow for receipt uploads
+    if (qrCodeData) {
+      const receiptResult = await processReceipt({ receiptImage: qrCodeData });
+      if (!receiptResult.isVerified) {
+        return NextResponse.json({ error: 'Receipt verification failed', details: receiptResult.verificationNotes }, { status: 400 });
+      }
+    }
 
-    // TODO: Call processReceipt Genkit flow for receipt uploads
 
     const loyaltyRule = await prisma.loyaltyRule.findFirst({
       where: { business_id: businessId, rule_type: 'points' },
