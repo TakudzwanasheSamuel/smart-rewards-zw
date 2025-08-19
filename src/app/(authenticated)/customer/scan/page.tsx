@@ -11,16 +11,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { QrCode, Camera, Upload, AlertTriangle } from "lucide-react";
+import { QrCode, Camera, Upload, AlertTriangle, CheckCircle } from "lucide-react";
 import {
     Alert,
     AlertDescription,
     AlertTitle,
-  } from "@/components/ui/alert"
+  } from "@/components/ui/alert";
+import { loyaltyApi } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function ScanPage() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,15 +64,88 @@ export default function ScanPage() {
     }
   }, [toast]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // In a real app, you would upload the file and process it.
+  const processQRCode = async (qrData: string) => {
+    if (!user || user.userType !== 'customer') {
       toast({
-        title: "Receipt Uploaded",
-        description: `${file.name} is being processed for verification.`,
+        variant: "destructive",
+        title: "Error",
+        description: "Please log in as a customer to scan receipts.",
       });
+      return;
     }
+
+    setIsProcessing(true);
+    try {
+      // Parse QR code data (format: businessId:transactionAmount)
+      const [businessId, amountStr] = qrData.split(':');
+      const transactionAmount = parseFloat(amountStr);
+
+      if (!businessId || isNaN(transactionAmount)) {
+        throw new Error('Invalid QR code format');
+      }
+
+      console.log('🔍 Processing QR code:', { businessId, transactionAmount });
+
+      const result = await loyaltyApi.scanQR(qrData, businessId, transactionAmount);
+      
+      toast({
+        title: "Points Earned! 🎉",
+        description: `You earned ${result.pointsEarned} loyalty points from your purchase!`,
+      });
+
+      console.log('✅ QR scan successful:', result);
+    } catch (error: any) {
+      console.error('❌ QR scan failed:', error);
+      toast({
+        variant: "destructive",
+        title: "Scan Failed",
+        description: error.message || "Could not process this QR code. Please try again.",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    try {
+      // For demo purposes, simulate processing a receipt
+      // In a real app, you would upload to AI service for processing
+      toast({
+        title: "Receipt Processing",
+        description: `${file.name} is being processed with AI verification...`,
+      });
+
+      // Simulate AI processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Mock successful processing
+      const mockPointsEarned = Math.floor(Math.random() * 50) + 10;
+      
+      toast({
+        title: "Receipt Verified! ✅",
+        description: `You earned ${mockPointsEarned} points from your receipt!`,
+      });
+
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Processing Failed",
+        description: "Could not process this receipt. Please try again.",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Mock QR code detection (in real app, you'd use a QR library)
+  const handleScanButtonClick = () => {
+    // Simulate scanning a QR code for demo
+    const mockQRData = "business123:25.50"; // business ID : transaction amount
+    processQRCode(mockQRData);
   };
 
   return (
@@ -117,6 +194,28 @@ export default function ScanPage() {
                    </div>
                 )}
               </div>
+              <div className="mt-4 text-center">
+                <Button 
+                  onClick={handleScanButtonClick} 
+                  disabled={isProcessing || hasCameraPermission === false}
+                  className="w-full"
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <QrCode className="mr-2 h-4 w-4" />
+                      Scan QR Code (Demo)
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Click to simulate scanning a QR code for testing
+                </p>
+              </div>
             </TabsContent>
             <TabsContent value="upload-receipt" className="p-6">
               <CardTitle>Upload Receipt Photo</CardTitle>
@@ -138,8 +237,21 @@ export default function ScanPage() {
                   className="hidden"
                   accept="image/png, image/jpeg, image/gif"
                 />
-                <Button onClick={() => fileInputRef.current?.click()}>
-                  Upload Photo
+                <Button 
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Photo
+                    </>
+                  )}
                 </Button>
               </div>
             </TabsContent>

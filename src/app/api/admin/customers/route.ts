@@ -24,6 +24,21 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Verify business exists (in case of stale tokens after database reset)
+    const business = await prisma.business.findUnique({
+      where: { user_id: businessId }
+    });
+    
+    if (!business) {
+      console.log('❌ Business not found in database - likely stale token after reset');
+      return NextResponse.json({ 
+        error: 'Business account not found. Please log out and log back in.',
+        code: 'STALE_TOKEN'
+      }, { status: 401 });
+    }
+
+    console.log(`📊 Fetching customers for business ${businessId}`);
+
     const relations = await prisma.customerBusinessRelation.findMany({
       where: { business_id: businessId },
       include: {
@@ -32,6 +47,8 @@ export async function GET(req: NextRequest) {
     });
 
     const customers = relations.map((relation) => relation.customer);
+    
+    console.log(`✅ Found ${customers.length} customers following this business:`, customers.map(c => c.user_id));
 
     return NextResponse.json(customers);
   } catch (error) {

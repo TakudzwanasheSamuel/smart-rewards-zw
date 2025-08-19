@@ -36,19 +36,29 @@ model Customer {
   user                     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   customer_business_relations CustomerBusinessRelation[]
   transactions             Transaction[]
-  mukando_groups           MukandoGroup[]
+  created_mukando_groups   MukandoGroup[] @relation("CreatedMukandoGroups")
+  mukando_memberships      MukandoMember[] @relation("MukandoMemberships")
   mukando_contributions    MukandoContribution[]
   customer_challenges      CustomerChallenge[]
+  redeemed_offers          RedeemedOffer[]
+  customer_badges          CustomerBadge[]
 }
 
 model Business {
   user_id                  String    @id
   business_name            String
   business_category        String?
-  logo_url                 String?
+  description              String?   // Changed from business_description
+  contact_email            String?
   contact_phone            String?
-  location                 Unsupported("geometry(Point, 4326)")?
+  address                  String?   // Changed from business_address
+  logo_url                 String?
+  website_url              String?
+  latitude                 Float?    // Business location latitude
+  longitude                Float?    // Business location longitude
   shared_loyalty_id        String?
+  created_at               DateTime  @default(now())
+  updated_at               DateTime  @default(now()) @updatedAt
   user                     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   customer_business_relations CustomerBusinessRelation[]
   transactions             Transaction[]
@@ -57,7 +67,7 @@ model Business {
   mukando_groups           MukandoGroup[]
   ai_insights              AiInsight[]
 
-  @@index([location], name: "business_location_idx", type: Gist)
+  @@index([latitude, longitude])
 }
 
 model CustomerBusinessRelation {
@@ -70,14 +80,20 @@ model CustomerBusinessRelation {
 }
 
 model Transaction {
-  id                 String   @id @default(uuid())
-  customer_id        String
-  business_id        String
-  transaction_amount Decimal?
-  points_earned      Int?
-  created_at         DateTime @default(now())
-  customer           Customer @relation(fields: [customer_id], references: [user_id])
-  business           Business @relation(fields: [business_id], references: [user_id])
+  id                      String    @id @default(uuid())
+  customer_id             String
+  business_id             String?
+  transaction_type        String    @default("points_earned") // "points_earned", "redemption", "mukando_contribution"
+  transaction_amount      Decimal?
+  points_earned           Int?
+  points_deducted         Int?
+  offer_id                String?
+  mukando_group_id        String?   // For Mukando contributions
+  is_mukando_contribution Boolean   @default(false)
+  loyalty_points_awarded  Int?      // Loyalty points earned for this transaction
+  created_at              DateTime  @default(now())
+  customer                Customer  @relation(fields: [customer_id], references: [user_id])
+  business                Business? @relation(fields: [business_id], references: [user_id])
 }
 
 model LoyaltyRule {
@@ -95,34 +111,73 @@ model Offer {
   description     String?
   points_required Int?
   is_geo_fenced   Boolean   @default(false)
-  geo_fence       Unsupported("geometry(Polygon, 4326)")?
+  geo_fence_lat   Float?
+  geo_fence_lng   Float?
+  geo_fence_radius Float?
   active_from     DateTime?
   active_to       DateTime?
   reward_type     String    @default("monetary")
   is_coupon       Boolean   @default(false)
   discount_code   String?
+  is_redeemable   Boolean   @default(true)
+  created_at      DateTime  @default(now())
   business        Business  @relation(fields: [business_id], references: [user_id])
+  redeemed_offers RedeemedOffer[]
+  redemption_codes RedemptionCode[]
 }
 
 model MukandoGroup {
-  id                     String                @id @default(uuid())
-  business_id            String
-  group_name             String
-  current_payout_user_id String?
-  total_pot              Decimal?              @default(0)
-  business               Business              @relation(fields: [business_id], references: [user_id])
-  payout_user            Customer?             @relation(fields: [current_payout_user_id], references: [user_id])
-  mukando_contributions  MukandoContribution[]
+  id                        String              @id @default(uuid())
+  creator_id                String              // Customer who created the group
+  business_id               String
+  goal_name                 String              // Product/service name (e.g., "Gaming Console")
+  goal_points_required      Int                 // Total points needed
+  contribution_interval     String              // 'weekly', 'monthly'
+  term_length               Int                 // Duration in months
+  status                    String              @default("pending_approval") // pending_approval, approved, completed, cancelled
+  max_members               Int?                // Set by business during approval
+  discount_rate             Float?              // Percentage discount from business
+  total_mukando_points      Int                 @default(0) // Total points saved
+  total_loyalty_points_earned Int               @default(0) // Total loyalty points to distribute
+  current_payout_turn       Int                 @default(0) // For round-robin distribution
+  created_at                DateTime            @default(now())
+  updated_at                DateTime            @updatedAt
+  approved_at               DateTime?
+  completed_at              DateTime?
+  
+  // Relations
+  creator                   Customer            @relation("CreatedMukandoGroups", fields: [creator_id], references: [user_id], onDelete: Cascade)
+  business                  Business            @relation(fields: [business_id], references: [user_id], onDelete: Cascade)
+  contributions             MukandoContribution[]
+  members                   MukandoMember[]
 }
 
 model MukandoContribution {
-  id          String   @id @default(uuid())
-  group_id    String
-  customer_id String
-  amount      Decimal?
-  created_at  DateTime @default(now())
-  group       MukandoGroup @relation(fields: [group_id], references: [id])
-  customer    Customer     @relation(fields: [customer_id], references: [user_id])
+  id                      String        @id @default(uuid())
+  group_id                String
+  customer_id             String
+  points_amount           Int           // Points contributed
+  loyalty_points_awarded  Int           // Loyalty points earned for this contribution
+  created_at              DateTime      @default(now())
+  
+  // Relations
+  group                   MukandoGroup  @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  customer                Customer      @relation(fields: [customer_id], references: [user_id], onDelete: Cascade)
+}
+
+model MukandoMember {
+  id                  String        @id @default(uuid())
+  group_id            String
+  customer_id         String
+  points_contributed  Int           @default(0) // Total points contributed by this member
+  joined_at           DateTime      @default(now())
+  payout_order        Int           // Position in round-robin payout
+  
+  // Relations
+  group               MukandoGroup  @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  customer            Customer      @relation("MukandoMemberships", fields: [customer_id], references: [user_id], onDelete: Cascade)
+  
+  @@unique([group_id, customer_id]) // Prevent duplicate memberships
 }
 
 model Challenge {
@@ -180,4 +235,61 @@ enum InsightType {
   churn_prediction
   segmentation
   feedback_summary
+}
+
+model RedeemedOffer {
+  id                     String   @id @default(uuid())
+  customer_id            String
+  offer_id               String
+  business_id            String
+  redemption_timestamp   DateTime @default(now())
+  redemption_code        String   @unique
+  customer               Customer @relation(fields: [customer_id], references: [user_id])
+  offer                  Offer    @relation(fields: [offer_id], references: [id])
+  
+  @@index([customer_id])
+  @@index([offer_id])
+  @@index([redemption_code])
+}
+
+model RedemptionCode {
+  id              String   @id @default(uuid())
+  offer_id        String
+  code            String   @unique
+  is_used         Boolean  @default(false)
+  customer_id     String?
+  used_at         DateTime?
+  created_at      DateTime @default(now())
+  expires_at      DateTime?
+  offer           Offer    @relation(fields: [offer_id], references: [id])
+  
+  @@index([code])
+  @@index([offer_id])
+}
+
+model Badge {
+  id              String           @id @default(uuid())
+  name            String           @unique
+  description     String
+  icon            String           // Icon name (Trophy, Award, Star, etc.)
+  category        String           // activity, social, milestone, special
+  criteria_json   Json             // Badge earning criteria
+  points_reward   Int              @default(0) // Points awarded when earned
+  is_active       Boolean          @default(true)
+  created_at      DateTime         @default(now())
+  customer_badges CustomerBadge[]
+}
+
+model CustomerBadge {
+  id          String   @id @default(uuid())
+  customer_id String
+  badge_id    String
+  earned_at   DateTime @default(now())
+  
+  customer    Customer @relation(fields: [customer_id], references: [user_id], onDelete: Cascade)
+  badge       Badge    @relation(fields: [badge_id], references: [id], onDelete: Cascade)
+  
+  @@unique([customer_id, badge_id]) // Prevent duplicate badges
+  @@index([customer_id])
+  @@index([badge_id])
 }

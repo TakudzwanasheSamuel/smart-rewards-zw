@@ -17,14 +17,14 @@ async function getBusinessIdFromToken(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const businessId = await getBusinessIdFromToken(req);
     if (!businessId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id: customerId } = params;
+    const { id: customerId } = await params;
     const { loyalty_points, eco_points } = await req.json();
 
     if (loyalty_points === undefined && eco_points === undefined) {

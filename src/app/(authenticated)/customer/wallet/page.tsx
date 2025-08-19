@@ -1,18 +1,49 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowDownLeft, ArrowUpRight, Repeat, Landmark, ShieldCheck, HandCoins } from "lucide-react";
+import { customerApi } from "@/lib/api";
+import { formatPointsAsCurrency } from "@/lib/currency";
+import { useAuth } from "@/contexts/auth-context";
 
-const transactions = [
-  { type: "earn", description: "Purchase at Chicken Inn", amount: "+50 pts", date: "2024-07-20" },
-  { type: "redeem", description: "Coffee at Cafe Nush", amount: "-25 pts", date: "2024-07-19" },
-  { type: "earn", description: "Referral Bonus", amount: "+100 pts", date: "2024-07-18" },
-  { type: "redeem", description: "Discount at OK Mart", amount: "-75 pts", date: "2024-07-17" },
-  { type: "earn", description: "Eco-Point Bonus", amount: "+15 pts", date: "2024-07-16" },
-];
+interface Transaction {
+  id: string;
+  type: 'earn' | 'redeem';
+  description: string;
+  amount: string;
+  points: number;
+  date: string;
+  businessName?: string;
+}
 
 export default function WalletPage() {
+  const { user } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      if (!user || user.userType !== 'customer') return;
+
+      try {
+        const transactionsData = await customerApi.getTransactions();
+        setTransactions(transactionsData);
+      } catch (error) {
+        console.error('Failed to fetch transactions:', error);
+        // Set empty array on error instead of crashing
+        setTransactions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, [user]);
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <h1 className="text-2xl font-bold font-headline tracking-tight mb-4">My Wallet</h1>
@@ -39,18 +70,39 @@ export default function WalletPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.map((tx, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium flex items-center">
-                        {tx.type === "earn" ? <ArrowDownLeft className="h-4 w-4 mr-2 text-green-500" /> : <ArrowUpRight className="h-4 w-4 mr-2 text-red-500" />}
-                        {tx.description}
-                      </TableCell>
-                      <TableCell>{tx.date}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant={tx.type === 'earn' ? 'secondary' : 'destructive'} className="text-xs">{tx.amount}</Badge>
+                  {isLoading ? (
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center">
+                            <Skeleton className="h-4 w-4 mr-2" />
+                            <Skeleton className="h-4 w-48" />
+                          </div>
+                        </TableCell>
+                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-6 w-16" /></TableCell>
+                      </TableRow>
+                    ))
+                  ) : transactions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                        No transactions yet. Start earning points by shopping at partner businesses!
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    transactions.map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell className="font-medium flex items-center">
+                          {tx.type === "earn" ? <ArrowDownLeft className="h-4 w-4 mr-2 text-green-500" /> : <ArrowUpRight className="h-4 w-4 mr-2 text-red-500" />}
+                          {tx.description}
+                        </TableCell>
+                        <TableCell>{tx.date}</TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant={tx.type === 'earn' ? 'secondary' : 'destructive'} className="text-xs">{tx.amount}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

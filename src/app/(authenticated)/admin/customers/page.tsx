@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Search, SlidersHorizontal, UserPlus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -37,29 +38,113 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/contexts/auth-context";
+import { adminApi } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
-const customers = [
-  { id: "CUST-001", name: "Tafadzwa Chihwa", email: "tafadzwa.c@example.com", tier: "Gold", points: 12530, ecoPoints: 500, status: "Active" },
-  { id: "CUST-002", name: "Rudo Moyo", email: "rudo.moyo@example.com", tier: "Silver", points: 8200, ecoPoints: 320, status: "Active" },
-  { id: "CUST-003", name: "Kudakwashe Banda", email: "k.banda@example.com", tier: "Bronze", points: 1500, ecoPoints: 50, status: "Inactive" },
-  { id: "CUST-004", name: "Fadzai Shumba", email: "fadzaishumba@example.com", tier: "Platinum", points: 25000, ecoPoints: 1200, status: "Active" },
-  { id: "CUST-005", name: "Tendai Mapuranga", email: "tendaim@example.com", tier: "Silver", points: 7800, ecoPoints: 280, status: "At Risk" },
-];
-
-const transactions = [
-  { description: "Purchase at Store", amount: "+50 pts", date: "2024-07-20" },
-  { description: "Redeemed Coffee", amount: "-25 pts", date: "2024-07-19" },
-];
+interface Customer {
+  user_id: string;
+  full_name: string;
+  loyalty_points: number;
+  eco_points: number;
+  loyalty_tier: string;
+  user?: {
+    email: string;
+  };
+}
 
 export default function CustomersPage() {
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [actionType, setActionType] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [adjustmentAmount, setAdjustmentAmount] = useState<number>(0);
+  const [pointType, setPointType] = useState<"loyalty" | "eco">("loyalty");
 
-  const handleActionClick = (customer: any, type: string) => {
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      if (!user || user.userType !== 'business') return;
+
+      try {
+        const customersData = await adminApi.getCustomers();
+        setCustomers(customersData);
+        setFilteredCustomers(customersData);
+      } catch (error) {
+        console.error('Failed to fetch customers:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load customers. Please try again.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, [user, toast]);
+
+  useEffect(() => {
+    // Filter customers based on search term
+    if (searchTerm.trim() === "") {
+      setFilteredCustomers(customers);
+    } else {
+      const filtered = customers.filter(customer =>
+        customer.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.user?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredCustomers(filtered);
+    }
+  }, [searchTerm, customers]);
+
+  const handleActionClick = (customer: Customer, type: string) => {
     setSelectedCustomer(customer);
     setActionType(type);
     setIsModalOpen(true);
+  };
+
+  const handlePointsAdjustment = async () => {
+    if (!selectedCustomer || adjustmentAmount === 0) return;
+
+    try {
+      if (pointType === "loyalty") {
+        await adminApi.adjustPoints(selectedCustomer.user_id, adjustmentAmount);
+      } else {
+        await adminApi.adjustPoints(selectedCustomer.user_id, undefined, adjustmentAmount);
+      }
+
+      // Refresh customer data
+      const customersData = await adminApi.getCustomers();
+      setCustomers(customersData);
+      setFilteredCustomers(customersData);
+
+      toast({
+        title: "Points adjusted successfully",
+        description: `${adjustmentAmount > 0 ? 'Added' : 'Removed'} ${Math.abs(adjustmentAmount)} ${pointType} points`,
+      });
+
+      setIsModalOpen(false);
+      setAdjustmentAmount(0);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to adjust points",
+      });
+    }
+  };
+
+  const getStatusBadge = (customer: Customer) => {
+    // Simple status logic based on points and activity
+    if (customer.loyalty_points > 10000) return { variant: "default" as const, text: "VIP" };
+    if (customer.loyalty_points > 5000) return { variant: "secondary" as const, text: "Active" };
+    if (customer.loyalty_points > 1000) return { variant: "outline" as const, text: "Regular" };
+    return { variant: "destructive" as const, text: "New" };
   };
 
   return (
@@ -73,6 +158,8 @@ export default function CustomersPage() {
               type="search"
               placeholder="Search customers..."
               className="pl-8 sm:w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex gap-2 w-full md:w-auto ml-auto">
@@ -110,53 +197,71 @@ export default function CustomersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {customers.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell>
-                    <div className="font-medium">{customer.name}</div>
-                    <div className="text-sm text-muted-foreground">{customer.email}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{customer.tier}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium">{customer.points.toLocaleString()}</TableCell>
-                   <TableCell className="text-right font-medium">{customer.ecoPoints.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        customer.status === "Active"
-                          ? "secondary"
-                          : customer.status === "At Risk"
-                          ? "destructive"
-                          : "outline"
-                      }
-                    >
-                      {customer.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleActionClick(customer, 'profile')}>View profile</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleActionClick(customer, 'points')}>Adjust points</DropdownMenuItem>
-                         <DropdownMenuItem onClick={() => handleActionClick(customer, 'eco-points')}>Adjust Eco-Points</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleActionClick(customer, 'offer')}>Approve offer</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
-                          Deactivate user
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <div>
+                        <Skeleton className="h-4 w-32 mb-1" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                    </TableCell>
+                    <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredCustomers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="text-muted-foreground">
+                      {searchTerm.trim() !== "" 
+                        ? "No customers match your search criteria." 
+                        : "No customers following your business yet."}
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredCustomers.map((customer) => {
+                  const statusBadge = getStatusBadge(customer);
+                  return (
+                    <TableRow key={customer.user_id}>
+                      <TableCell>
+                        <div className="font-medium">{customer.full_name || 'No name'}</div>
+                        <div className="text-sm text-muted-foreground">{customer.user?.email || 'No email'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{customer.loyalty_tier}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-medium">{customer.loyalty_points.toLocaleString()}</TableCell>
+                      <TableCell className="text-right font-medium">{customer.eco_points.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge variant={statusBadge.variant}>
+                          {statusBadge.text}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleActionClick(customer, 'view')}>View profile</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleActionClick(customer, 'points')}>Adjust points</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleActionClick(customer, 'offer')}>Send offer</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </div>
@@ -164,21 +269,21 @@ export default function CustomersPage() {
       
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
-          {actionType === 'profile' && selectedCustomer && (
+          {actionType === 'view' && selectedCustomer && (
             <>
               <DialogHeader>
-                <DialogTitle>{selectedCustomer.name}'s Profile</DialogTitle>
-                <DialogDescription>{selectedCustomer.email}</DialogDescription>
+                <DialogTitle>{selectedCustomer.full_name || 'Customer'}'s Profile</DialogTitle>
+                <DialogDescription>{selectedCustomer.user?.email || 'No email'}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                  <div>
-                    <Label>Loyalty Tier: {selectedCustomer.tier}</Label>
+                    <Label>Loyalty Tier: {selectedCustomer.loyalty_tier}</Label>
                     <Progress value={60} className="mt-1" />
                     <p className="text-xs text-muted-foreground mt-1">Progress to next tier</p>
                 </div>
                 <div>
                   <Label>Balances</Label>
-                  <p className="font-bold text-lg">{selectedCustomer.points.toLocaleString()} pts / {selectedCustomer.ecoPoints.toLocaleString()} eco-pts</p>
+                  <p className="font-bold text-lg">{selectedCustomer.loyalty_points.toLocaleString()} pts / {selectedCustomer.eco_points.toLocaleString()} eco-pts</p>
                 </div>
                 <div>
                    <Label>Transaction History</Label>
@@ -205,13 +310,20 @@ export default function CustomersPage() {
           {actionType === 'points' && selectedCustomer && (
             <>
               <DialogHeader>
-                <DialogTitle>Adjust Points for {selectedCustomer.name}</DialogTitle>
-                <DialogDescription>Current Balance: {selectedCustomer.points.toLocaleString()} points</DialogDescription>
+                <DialogTitle>Adjust Points for {selectedCustomer.full_name || 'Customer'}</DialogTitle>
+                <DialogDescription>Current Balance: {selectedCustomer.loyalty_points.toLocaleString()} loyalty points, {selectedCustomer.eco_points.toLocaleString()} eco points</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="points-change" className="text-right">Amount</Label>
-                  <Input id="points-change" type="number" defaultValue="100" className="col-span-3" />
+                  <Input 
+                    id="points-change" 
+                    type="number" 
+                    value={adjustmentAmount}
+                    onChange={(e) => setAdjustmentAmount(parseInt(e.target.value) || 0)}
+                    placeholder="Enter positive or negative number"
+                    className="col-span-3" 
+                  />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="reason" className="text-right">Reason</Label>

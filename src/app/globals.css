@@ -1,3 +1,6 @@
+/* Leaflet CSS for maps - must come before other rules */
+@import 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -66,4 +69,27 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom styles for Leaflet map popups */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.custom-popup .leaflet-popup-tip {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-left: none !important;
 }

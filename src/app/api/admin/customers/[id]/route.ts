@@ -17,14 +17,14 @@ async function getBusinessIdFromToken(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const businessId = await getBusinessIdFromToken(req);
     if (!businessId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id: customerId } = params;
+    const { id: customerId } = await params;
 
     const customer = await prisma.customer.findUnique({
       where: { user_id: customerId },

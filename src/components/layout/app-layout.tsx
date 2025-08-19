@@ -7,11 +7,16 @@ import {
   Wallet,
   Map,
   Bell,
+  BotMessageSquare,
   SlidersHorizontal,
   Users,
   type LucideIcon,
   Store,
   QrCode,
+  CheckCircle,
+  MapPin,
+  Building2,
+  Trophy,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { SidebarNav } from "./sidebar-nav";
@@ -28,13 +33,20 @@ const customerNavItems: NavItem[] = [
   { href: "/customer/businesses", label: "Businesses", icon: Store },
   { href: "/customer/scan", label: "Scan", icon: QrCode },
   { href: "/customer/map", label: "Map", icon: Map },
+  { href: "/customer/mukando", label: "Mukando", icon: Users },
+  { href: "/customer/badges", label: "Badges", icon: Trophy },
   { href: "/customer/notifications", label: "Notifications", icon: Bell },
 ];
 
 const adminNavItems: NavItem[] = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/insights", label: "AI Insights", icon: BotMessageSquare },
+  { href: "/admin/profile", label: "Business Profile", icon: Building2 },
   { href: "/admin/rules", label: "Loyalty Rules", icon: SlidersHorizontal },
   { href: "/admin/customers", label: "Customers", icon: Users },
+  { href: "/admin/mukando", label: "Mukando Groups", icon: Users },
+  { href: "/admin/location", label: "Business Location", icon: MapPin },
+  { href: "/admin/redemption", label: "Verify Redemption", icon: CheckCircle },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {

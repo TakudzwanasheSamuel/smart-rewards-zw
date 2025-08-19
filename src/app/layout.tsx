@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
-import { Toaster } from "@/components/ui/toaster"
+import { ClientProviders } from "@/components/providers/client-providers";
 import './globals.css';
+import 'leaflet/dist/leaflet.css';
 import { Inter } from 'next/font/google';
 
 const inter = Inter({
@@ -21,8 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-body antialiased min-h-screen bg-background`}>
-        {children}
-        <Toaster />
+        <ClientProviders>
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );
