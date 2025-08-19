@@ -1,12 +1,21 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Edit, Check } from 'lucide-react';
 import { adminApi } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import LocationPicker from '@/components/admin/location-picker';
+
+// Dynamic import to prevent SSR issues with map component
+const LocationPicker = dynamic(
+  () => import('@/components/admin/location-picker'),
+  { 
+    ssr: false,
+    loading: () => <div className="p-6 text-center">Loading map...</div>
+  }
+);
 
 interface BusinessProfile {
   user_id: string;

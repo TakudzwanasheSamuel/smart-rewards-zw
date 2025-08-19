@@ -9,8 +9,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    // Disable problematic features for production
-    instrumentationHook: false,
+    // Add any experimental features here
   },
   webpack: (config, { dev, isServer }) => {
     // Handle Genkit and AI dependencies
