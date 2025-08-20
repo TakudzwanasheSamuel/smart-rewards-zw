@@ -172,7 +172,7 @@ export default function MapView() {
             }
 
             if (!mapContainerRef.current) {
-                console.error('❌ Map container ref is null - DOM not ready');
+                console.log('⏳ Map container not ready yet, retrying...');
                 // Retry after a longer delay
                 setTimeout(initializeMap, 300);
                 return;
@@ -187,6 +187,14 @@ export default function MapView() {
             // Ensure container has dimensions
             if (mapContainerRef.current.offsetWidth === 0 || mapContainerRef.current.offsetHeight === 0) {
                 console.log('⏳ Container has no dimensions, retrying...');
+                setTimeout(initializeMap, 300);
+                return;
+            }
+
+            // Check if container is actually visible and has proper dimensions
+            const container = mapContainerRef.current;
+            if (!container || container.offsetParent === null) {
+                console.log('⏳ Container not visible yet, retrying...');
                 setTimeout(initializeMap, 300);
                 return;
             }
@@ -229,6 +237,8 @@ export default function MapView() {
 
             } catch (error) {
                 console.error('❌ Map initialization error:', error);
+                // Just retry once more, then let it be
+                setTimeout(initializeMap, 500);
             }
         };
 
@@ -550,7 +560,7 @@ export default function MapView() {
             )}
 
             {/* Instructions for first-time users */}
-            {!selectedBusiness && !searchQuery && businesses.length > 0 && (
+            {!selectedBusiness && !searchQuery && businesses.length > 0 && mapInitialized && (
                 <div className="absolute bottom-4 left-4 bg-blue-50 border border-blue-200 p-3 rounded-lg shadow-sm z-[1000] max-w-xs">
                     <p className="text-sm text-blue-800 font-medium mb-1">💡 How to use the map:</p>
                     <ul className="text-xs text-blue-600 space-y-1">
@@ -559,8 +569,10 @@ export default function MapView() {
                         <li>• Click map markers for detailed business info</li>
                         <li>• Use "View Full Profile" to see complete details</li>
                     </ul>
-                            </div>
+                </div>
             )}
+
+
                        </div>
     );
 }

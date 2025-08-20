@@ -30,11 +30,13 @@ export default function ScanPage() {
 
   useEffect(() => {
     const getCameraPermission = async () => {
+      // Check if camera API is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        console.error("Camera API not supported.");
+        // Camera API not supported (e.g., on laptops without cameras)
         setHasCameraPermission(false);
         return;
       }
+      
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         setHasCameraPermission(true);
@@ -42,14 +44,17 @@ export default function ScanPage() {
           videoRef.current.srcObject = stream;
         }
       } catch (error) {
-        console.error("Error accessing camera:", error);
+        // Camera access denied or not available
         setHasCameraPermission(false);
-        toast({
-          variant: "destructive",
-          title: "Camera Access Denied",
-          description:
-            "Please enable camera permissions in your browser settings.",
-        });
+        
+        // Only show toast for permission denial, not for unsupported devices
+        if (error instanceof Error && error.name === 'NotAllowedError') {
+          toast({
+            variant: "destructive",
+            title: "Camera Access Denied",
+            description: "Please enable camera permissions in your browser settings.",
+          });
+        }
       }
     };
 
@@ -184,13 +189,23 @@ export default function ScanPage() {
                 </div>
                 {hasCameraPermission === false && (
                    <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center p-4">
-                     <Alert variant="destructive">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Camera Access Required</AlertTitle>
-                        <AlertDescription>
-                            Please allow camera access to use the QR scanner. You may need to change permissions in your browser settings and refresh the page.
-                        </AlertDescription>
-                    </Alert>
+                     <div className="text-center space-y-3">
+                       <Camera className="h-12 w-12 text-muted-foreground mx-auto" />
+                       <h3 className="text-lg font-semibold">Camera Not Available</h3>
+                       <p className="text-sm text-muted-foreground max-w-xs">
+                         {!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia 
+                           ? "Your device doesn't support camera access. Use the Upload Receipt tab instead."
+                           : "Camera access is required for QR scanning. Please check your browser permissions."
+                         }
+                       </p>
+                       <Button 
+                         variant="outline" 
+                         size="sm"
+                         onClick={() => document.querySelector('[data-value="upload-receipt"]')?.click()}
+                       >
+                         Switch to Upload Receipt
+                       </Button>
+                     </div>
                    </div>
                 )}
               </div>

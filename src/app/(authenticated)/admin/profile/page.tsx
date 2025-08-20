@@ -41,7 +41,7 @@ interface BusinessProfile {
   longitude: number;
   created_at: string;
   updated_at: string;
-  user: {
+  user?: {
     email: string;
     created_at: string;
   };
@@ -219,7 +219,7 @@ export default function BusinessProfilePage() {
                     </Badge>
                     <div className="flex items-center gap-2 text-muted-foreground mt-2">
                       <Mail className="h-4 w-4" />
-                      {profile.user.email}
+                      {profile.user?.email || 'Email not available'}
                     </div>
                   </div>
                 )}
@@ -306,7 +306,7 @@ export default function BusinessProfilePage() {
 
               <div>
                 <Label className="text-sm font-medium">Account Email</Label>
-                <p className="text-sm text-muted-foreground mt-1">{profile.user.email}</p>
+                <p className="text-sm text-muted-foreground mt-1">{profile.user?.email || 'Email not available'}</p>
               </div>
             </div>
 
@@ -344,11 +344,11 @@ export default function BusinessProfilePage() {
             <div>
               <Label className="text-sm font-medium">Member Since</Label>
               <p className="text-sm text-muted-foreground mt-1">
-                {new Date(profile.user.created_at).toLocaleDateString('en-US', {
+                {profile.user?.created_at ? new Date(profile.user.created_at).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
-                })}
+                }) : 'Date not available'}
               </p>
             </div>
           </CardContent>

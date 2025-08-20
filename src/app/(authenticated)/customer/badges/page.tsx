@@ -246,9 +246,10 @@ export default function BadgesPage() {
             Object.entries(groupedEarnedBadges).map(([category, badges]) => (
               <div key={category} className="space-y-4">
                 <div className="flex items-center gap-2">
-                  {React.createElement(categoryIcons[category as keyof typeof categoryIcons] || Activity, {
-                    className: "h-5 w-5"
-                  })}
+                  {(() => {
+                    const IconComponent = categoryIcons[category as keyof typeof categoryIcons] || Activity;
+                    return <IconComponent className="h-5 w-5" />;
+                  })()}
                   <h2 className="text-xl font-semibold capitalize">{category}</h2>
                   <Badge variant="secondary">{badges.length}</Badge>
                 </div>
@@ -277,9 +278,10 @@ export default function BadgesPage() {
           {Object.entries(groupedAllBadges).map(([category, badges]) => (
             <div key={category} className="space-y-4">
               <div className="flex items-center gap-2">
-                {React.createElement(categoryIcons[category as keyof typeof categoryIcons] || Activity, {
-                  className: "h-5 w-5"
-                })}
+                {(() => {
+                  const IconComponent = categoryIcons[category as keyof typeof categoryIcons] || Activity;
+                  return <IconComponent className="h-5 w-5" />;
+                })()}
                 <h2 className="text-xl font-semibold capitalize">{category}</h2>
                 <Badge variant="secondary">{badges.length}</Badge>
               </div>

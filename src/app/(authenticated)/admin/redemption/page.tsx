@@ -30,6 +30,7 @@ import { adminApi } from "@/lib/api";
 import { formatPointsAsCurrency } from "@/lib/currency";
 import { parseQRData, isValidRedemptionCodeFormat } from "@/lib/redemption";
 import { BrowserCodeReader } from "@zxing/browser";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 interface VerificationResult {
   success: boolean;
@@ -53,7 +54,7 @@ interface VerificationResult {
   message?: string;
 }
 
-export default function RedemptionVerificationPage() {
+function RedemptionVerificationPageContent() {
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
   const [manualCode, setManualCode] = useState("");
@@ -121,16 +122,31 @@ export default function RedemptionVerificationPage() {
       console.error('❌ QR scanning error:', error);
       
       let errorMessage = "Failed to scan QR code. Please try again.";
+      let errorTitle = "Scanning Error";
+      
+      // Handle specific QR scanning errors gracefully
       if (error.name === 'NotAllowedError') {
         errorMessage = "Camera permission denied. Please allow camera access and try again.";
+        errorTitle = "Camera Access Denied";
       } else if (error.name === 'NotFoundError') {
-        errorMessage = "No camera found. Please use manual code entry.";
+        errorMessage = "No camera found. Please use manual code entry instead.";
+        errorTitle = "No Camera Available";
+      } else if (error.name === 'NotSupportedError') {
+        errorMessage = "Your device doesn't support camera scanning. Use manual code entry.";
+        errorTitle = "Device Not Supported";
       } else if (error.message === 'Invalid QR code format') {
-        errorMessage = "This QR code is not a valid redemption code.";
+        errorMessage = "This QR code is not a valid redemption code. Please check the code.";
+        errorTitle = "Invalid QR Code";
+      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        errorMessage = "Network error during scanning. Please check your connection.";
+        errorTitle = "Connection Error";
+      } else if (error.message.includes('timeout')) {
+        errorMessage = "Scanning timed out. Please try again or use manual entry.";
+        errorTitle = "Scan Timeout";
       }
       
       toast({
-        title: "Scanning Error",
+        title: errorTitle,
         description: errorMessage,
         variant: "destructive",
       });
@@ -177,23 +193,45 @@ export default function RedemptionVerificationPage() {
       console.error('❌ Verification failed:', error);
       
       let errorMessage = "Failed to verify redemption code.";
-      if (error.message.includes('Invalid redemption code')) {
-        errorMessage = "This redemption code is not valid or does not exist.";
-      } else if (error.message.includes('already been used')) {
-        errorMessage = "This redemption code has already been used.";
-      } else if (error.message.includes('expired')) {
-        errorMessage = "This redemption code has expired.";
-      } else if (error.message.includes('not valid for your business')) {
-        errorMessage = "This redemption code is not valid for your business.";
+      let errorTitle = "Verification Failed";
+      
+      // Handle specific error messages gracefully
+      if (error.message) {
+        if (error.message.includes('Invalid redemption code')) {
+          errorMessage = "This redemption code is not valid or does not exist.";
+        } else if (error.message.includes('already been used')) {
+          errorMessage = "This redemption code has already been used.";
+          errorTitle = "Code Already Used";
+        } else if (error.message.includes('expired')) {
+          errorMessage = "This redemption code has expired.";
+          errorTitle = "Code Expired";
+        } else if (error.message.includes('not valid for your business')) {
+          errorMessage = "This redemption code is not valid for your business. It may belong to a different business.";
+          errorTitle = "Wrong Business Code";
+        } else if (error.message.includes('Forbidden') || error.message.includes('403')) {
+          errorMessage = "You don't have permission to verify this redemption code. It may belong to a different business.";
+          errorTitle = "Access Denied";
+        } else if (error.message.includes('Unauthorized') || error.message.includes('401')) {
+          errorMessage = "Your session has expired. Please log in again.";
+          errorTitle = "Session Expired";
+        } else if (error.message.includes('not found')) {
+          errorMessage = "Redemption code not found in the system.";
+          errorTitle = "Code Not Found";
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+          errorTitle = "Connection Error";
+        }
       }
       
+      // Set verification result for UI display
       setVerificationResult({
         success: false,
         message: errorMessage
       });
       
+      // Show user-friendly toast
       toast({
-        title: "Verification Failed",
+        title: errorTitle,
         description: errorMessage,
         variant: "destructive",
       });
@@ -207,6 +245,16 @@ export default function RedemptionVerificationPage() {
       toast({
         title: "Code Required",
         description: "Please enter a redemption code.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate redemption code format
+    if (!isValidRedemptionCodeFormat(manualCode.trim())) {
+      toast({
+        title: "Invalid Format",
+        description: "Please enter a valid redemption code format (e.g., RED-XXXX-XXXX).",
         variant: "destructive",
       });
       return;
@@ -461,10 +509,29 @@ export default function RedemptionVerificationPage() {
                   /* Error Message */
                   <div className="flex items-start gap-3 p-3 bg-red-50 text-red-800 rounded-lg">
                     <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
-                    <div>
+                    <div className="flex-1">
                       <div className="font-medium">Verification Failed</div>
                       <div className="text-sm mt-1">
                         {verificationResult.message || 'Unknown error occurred'}
+                      </div>
+                      <div className="text-xs mt-2 text-red-700">
+                        💡 Tip: Make sure the redemption code belongs to your business and hasn't been used before.
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setVerificationResult(null)}
+                        >
+                          Try Another Code
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={resetVerification}
+                        >
+                          Reset
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -487,5 +554,13 @@ export default function RedemptionVerificationPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function RedemptionVerificationPage() {
+  return (
+    <ErrorBoundary>
+      <RedemptionVerificationPageContent />
+    </ErrorBoundary>
   );
 }

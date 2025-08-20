@@ -221,12 +221,28 @@ function MukandoPageContent() {
         termLength: '12'
       });
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating group:', error);
+      
+      // Handle specific error messages gracefully
+      let errorMessage = "Unable to create group at this time. Please try again later.";
+      
+      if (error.message) {
+        if (error.message.includes('already exists')) {
+          errorMessage = "A group with this name already exists for this business.";
+        } else if (error.message.includes('not found')) {
+          errorMessage = "Business not found. Please refresh the page and try again.";
+        } else if (error.message.includes('Invalid token')) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.message.includes('permission')) {
+          errorMessage = "You don't have permission to create groups for this business.";
+        }
+      }
+      
       toast({
-        title: "Information",
-        description: "Mukando groups are currently being set up. Please try again later!",
-        variant: "default",
+        title: "Creation Failed",
+        description: errorMessage,
+        variant: "destructive",
       });
     }
   };
@@ -239,12 +255,28 @@ function MukandoPageContent() {
         description: "Successfully joined the Mukando group!",
       });
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error joining group:', error);
+      
+      // Handle specific error messages gracefully
+      let errorMessage = "Unable to join this group at this time. Please try again later.";
+      
+      if (error.message) {
+        if (error.message.includes('already a member')) {
+          errorMessage = "You are already a member of this group.";
+        } else if (error.message.includes('not found')) {
+          errorMessage = "Group not found. Please refresh the page and try again.";
+        } else if (error.message.includes('full')) {
+          errorMessage = "This group is already full. Please try another group.";
+        } else if (error.message.includes('Invalid token')) {
+          errorMessage = "Your session has expired. Please log in again.";
+        }
+      }
+      
       toast({
-        title: "Information",
-        description: "Mukando groups are currently being set up. Please try again later!",
-        variant: "default",
+        title: "Join Failed",
+        description: errorMessage,
+        variant: "destructive",
       });
     }
   };
@@ -254,7 +286,7 @@ function MukandoPageContent() {
 
     try {
       const amount = parseInt(contributeAmount);
-      if (amount <= 0 || amount > customerProfile.loyalty_points) {
+      if (amount <= 0 || amount > (customerProfile?.loyalty_points || 0)) {
         toast({
           title: "Error",
           description: "Invalid contribution amount",
@@ -274,12 +306,30 @@ function MukandoPageContent() {
       setContributeAmount('');
       setSelectedGroup(null);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error contributing:', error);
+      
+      // Handle specific error messages gracefully
+      let errorMessage = "Unable to contribute at this time. Please try again later.";
+      
+      if (error.message) {
+        if (error.message.includes('not a member')) {
+          errorMessage = "You need to join this group before contributing. Please join the group first.";
+        } else if (error.message.includes('Insufficient')) {
+          errorMessage = "You don't have enough loyalty points for this contribution.";
+        } else if (error.message.includes('not approved')) {
+          errorMessage = "This group is not yet approved for contributions.";
+        } else if (error.message.includes('not found')) {
+          errorMessage = "Group not found. Please refresh the page and try again.";
+        } else if (error.message.includes('Invalid token')) {
+          errorMessage = "Your session has expired. Please log in again.";
+        }
+      }
+      
       toast({
-        title: "Information",
-        description: "Mukando groups are currently being set up. Please try again later!",
-        variant: "default",
+        title: "Contribution Failed",
+        description: errorMessage,
+        variant: "destructive",
       });
     }
   };
@@ -315,6 +365,24 @@ function MukandoPageContent() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Error boundary - if something goes wrong, show a friendly error message
+  if (!myGroups || !availableGroups || !businesses || !customerProfile) {
+    return (
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
+          <p className="text-gray-600 mb-4">We're having trouble loading your Mukando groups.</p>
+          <Button onClick={fetchData} variant="outline">
+            Try Again
+          </Button>
         </div>
       </div>
     );
@@ -619,7 +687,7 @@ function MukandoPageContent() {
                 value={contributeAmount}
                 onChange={(e) => setContributeAmount(e.target.value)}
                 placeholder="Enter amount"
-                max={customerProfile?.loyalty_points || 0}
+                max={Math.max(0, customerProfile?.loyalty_points || 0)}
               />
             </div>
             
@@ -627,7 +695,7 @@ function MukandoPageContent() {
               <p><strong>💡 Tip:</strong> You'll earn 10% of contributed points back as loyalty points!</p>
               {contributeAmount && (
                 <p className="mt-1">
-                  Contributing {contributeAmount} points = {Math.floor(parseInt(contributeAmount) * 0.1)} loyalty points earned
+                  Contributing {contributeAmount} points = {Math.floor((parseInt(contributeAmount) || 0) * 0.1)} loyalty points earned
                 </p>
               )}
             </div>
