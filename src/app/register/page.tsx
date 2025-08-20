@@ -1,11 +1,22 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowRight, Building, User } from "lucide-react";
+import Image from "next/image";
 
 export default function RegisterPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <div className="text-center mb-8">
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <Image 
+            src="/smart-rewards-zw.png?v=2" 
+            alt="Smart Rewards ZW Logo" 
+            width={80} 
+            height={80} 
+            className="object-contain"
+          />
+        </div>
         <h1 className="text-3xl font-bold font-headline text-primary">Join Smart Rewards</h1>
         <p className="text-muted-foreground">First, tell us who you are.</p>
       </div>

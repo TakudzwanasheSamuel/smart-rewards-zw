@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -60,7 +61,17 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="mx-auto max-w-sm w-full">
-        <CardHeader>
+        <CardHeader className="text-center">
+          {/* Logo */}
+          <div className="flex justify-center mb-4">
+            <Image 
+              src="/smart-rewards-zw.png?v=2" 
+              alt="Smart Rewards ZW Logo" 
+              width={80} 
+              height={80} 
+              className="object-contain"
+            />
+          </div>
           <CardTitle className="text-2xl font-headline">Sign In</CardTitle>
           <CardDescription>
             Enter your credentials below - you'll be automatically redirected to your dashboard
@@ -86,15 +97,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="#"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <Input 
                 id="password" 
                 type="password" 
@@ -115,11 +118,21 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="underline">
-              Get Started
-            </Link>
+          <div className="mt-4 text-center text-sm space-y-2">
+            <div>
+              Don&apos;t have an account?{" "}
+              <Link href="/register" className="underline">
+                Get Started
+              </Link>
+            </div>
+            <div>
+              <Link
+                href="#"
+                className="text-sm underline hover:text-primary transition-colors"
+              >
+                Forgot your password?
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>
