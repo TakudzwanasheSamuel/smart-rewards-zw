@@ -6,6 +6,8 @@ Smart Rewards ZW is a multi-tenant, AI-powered, location-based loyalty ecosystem
 
 This prototype demonstrates the core user flows and advanced features of the platform, built with a modern Next.js frontend and a clear roadmap for a full-stack, AI-integrated backend.
 
+See also: [Architecture Diagram](docs/architecture.md)
+
 ---
 
 ## 1. Core Functional Modules

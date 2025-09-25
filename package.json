@@ -10,7 +10,11 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:backup": "node scripts/db-backup.js",
+    "db:restore": "node scripts/db-restore.js",
+    "data:export": "node scripts/export-json.js",
+    "data:import": "node scripts/import-json.js"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",
@@ -60,6 +64,7 @@
     "next": "15.3.3",
     "ogl": "^1.0.11",
     "patch-package": "^8.0.0",
+    "pg": "^8.16.3",
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
